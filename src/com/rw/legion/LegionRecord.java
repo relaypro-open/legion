@@ -48,11 +48,12 @@ public class LegionRecord implements Writable{
      * Enable Hadoop serialization.
      */
     public void write(DataOutput out) throws IOException {
-        String[] keyList = contents.keySet().toArray(new String[0]);
-        String[] valueList = contents.entrySet().toArray(new String[0]);
+        out.writeInt(contents.size());
 
-        out.writeUTF(StringUtils.join(keyList, ","));
-        out.writeUTF(StringUtils.join(valueList, ","));
+        for (HashMap.Entry<String, String> entry : contents.entrySet()) {
+            out.writeUTF(entry.getKey());
+            out.writeUTF(entry.getValue());
+        }
     }
     
     /**
@@ -61,11 +62,13 @@ public class LegionRecord implements Writable{
     public void readFields(DataInput in) throws IOException {
         contents.clear();
         
-        String[] keyList = in.readUTF().split(",");
-        String[] valueList = in.readUTF().split(",");
+        int numVals = in.readInt();
         
-        for (int i = 0; i < keyList.length; i++) {
-            contents.put(keyList[i], valueList[i]);
+        for (int i = 0; i < numVals; i++) {
+            String key = in.readUTF();
+            String value = in.readUTF();
+            
+            contents.put(key, value);
         }
     }
     
