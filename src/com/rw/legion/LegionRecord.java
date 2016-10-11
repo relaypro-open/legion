@@ -205,7 +205,9 @@ public class LegionRecord implements Writable{
                         for (String dataKey : contents.keySet()) {
                             Matcher matcher = pattern.matcher(dataKey);
                             
-                            if (matcher.matches()) {
+                            if (matcher.matches() && matcher.groupCount()
+                                    == outputTable.getIndexNames().size()) {
+                                
                                 HashMap<String, String> values =
                                     new HashMap<String, String>();
                                 
