@@ -76,8 +76,6 @@ public class LegionRecord implements Writable{
      * Set the contents of the <code>LegionRecord</code> to a row from a CSV
      * file.
      * 
-     * @param fileName  The full path of the file this row came from. Can be
-     *                  extracted later using the key "file_name".
      * @param header  CSV header, from which column keys will be extracted.
      * @param rawLine  CSV record, from which data will be extracted.
      */
