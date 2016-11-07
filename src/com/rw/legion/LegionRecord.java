@@ -81,9 +81,7 @@ public class LegionRecord implements Writable{
      * @param header  CSV header, from which column keys will be extracted.
      * @param rawLine  CSV record, from which data will be extracted.
      */
-    public void setFromCsv(String fileName, String[] header, String rawLine) {
-        contents.put("file_name", fileName);
-        
+    public void setFromCsv(String[] header, String rawLine) {
         /*
          *  Supply the header length to split() in case there are trailing null
          *  fields.
@@ -100,14 +98,10 @@ public class LegionRecord implements Writable{
     /**
      * Set the contents of the <code>LegionRecord</code> using a JSON object.
      * 
-     * @param fileName  The full path of the file this row came from. Can be
-     *                  extracted later using the key "file_name".
      * @param rawLine  A JSON object, from which keys and data will be
      *                 extracted.
      */
-    public void setFromJson(String fileName, String rawLine) {
-        contents.put("file_name", fileName);
-        
+    public void setFromJson(String rawLine) {
         try {
             JsonReader jsonReader = new JsonReader(new StringReader(rawLine));
             jsonReader.setLenient(true);

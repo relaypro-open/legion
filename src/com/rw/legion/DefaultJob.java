@@ -21,11 +21,14 @@ import org.apache.hadoop.conf.*;
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapreduce.*;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.LazyOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.hadoop.fs.*;
+
 import java.io.*;
 import java.net.URI;
+
 import org.apache.hadoop.io.compress.*;
 
 /**
@@ -76,7 +79,8 @@ public class DefaultJob {
         
         hadoopJob.setJarByClass(DefaultJob.class);
         hadoopJob.setMapperClass(DefaultMapper.class);
-        hadoopJob.setOutputFormatClass(TextOutputFormat.class);
+        LazyOutputFormat.setOutputFormatClass(hadoopJob,
+                TextOutputFormat.class);
         
         // Compress the output to speed things up.
         TextOutputFormat.setCompressOutput(hadoopJob, true);
@@ -111,6 +115,9 @@ public class DefaultJob {
             MultipleOutputs.addNamedOutput(hadoopJob, outputTable.getTitle(),
                     TextOutputFormat.class, NullWritable.class, Text.class);
         }
+        
+        MultipleOutputs.addNamedOutput(hadoopJob, "skipped",
+                TextOutputFormat.class, NullWritable.class, Text.class);
         
         hadoopJob.waitForCompletion(true);
     } 

@@ -174,6 +174,12 @@ public class DefaultMapper
                 dataToWrite[i]
                     = StringEscapeUtils.escapeCsv(value.getData(keyList[i]));
             } else {
+                dataToWrite = new String[4];
+                dataToWrite[0] = value.getData("file_name");
+                dataToWrite[1] = value.getData("file_position");
+                dataToWrite[2] = column.getKey();
+                dataToWrite[3] = column.getValidationReason();
+                        
                 validates = false;
                 break;
             }
@@ -181,10 +187,13 @@ public class DefaultMapper
             i++;
         }
         
+        outputLine.set(StringUtils.join(dataToWrite, ","));
+        
         if (validates) {
-            outputLine.set(StringUtils.join(dataToWrite, ","));
-            outputWriters.write(outputTable.getTitle(),
-                                nothing, outputLine, outputTable.getTitle());
+            outputWriters.write(outputTable.getTitle(), nothing, outputLine,
+                    outputTable.getTitle());
+        } else {
+            outputWriters.write("skipped", nothing, outputLine, "skipped");
         }
     }
     
