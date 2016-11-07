@@ -265,10 +265,13 @@ public class LegionRecordReader
             return false;
         } else {
             if (isCsv) {
-                value.setFromCsv(fileName, header, thisLine.toString());
+                value.setFromCsv(header, thisLine.toString());
             } else {
-                value.setFromJson(fileName, thisLine.toString());
+                value.setFromJson(thisLine.toString());
             }
+            
+            value.setField("file_name",  fileName);
+            value.setField("file_position", new Long(pos - newSize).toString());
             
             return true;
         }

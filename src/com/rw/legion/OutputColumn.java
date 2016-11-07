@@ -43,6 +43,7 @@ public class OutputColumn {
     private boolean hasIndexes;
     private Pattern keyPattern;
     private boolean initialized = false;
+    private String validationReason;
     
     /**
      * Empty constructor for GSON.
@@ -153,13 +154,15 @@ public class OutputColumn {
      *          the supplied <code>LegionRecord</code>.
      */
     public boolean validates(String keyOverride, LegionRecord value) {
-	initialize();
+        initialize();
+        validationReason = null;
 	
         // If the key is absent, either fail or set it to blank
         if (value.getData(keyOverride) == null) {
             if (absentAsNull) {
                 value.setField(keyOverride, "");
             } else {
+                validationReason = "key absent";
                 return false;
             }
         }
@@ -167,6 +170,7 @@ public class OutputColumn {
         // If the value is blank, fail, replace it with something, or do nothing
         if (value.getData(keyOverride).equals("")) {
             if (allowNulls == false) {
+                validationReason = "value blank";
                 return false;
             } else if (!nullSubstitute.equals("")) {
                 value.setField(keyOverride, nullSubstitute);
@@ -198,10 +202,19 @@ public class OutputColumn {
             
             if (validationPattern.matcher(value.getData(keyOverride))
                     .matches() == false) {
+                validationReason = "regex";
                 return false;
             }
         }
         
         return true;
+    }
+    
+    /**
+     * @return  The reason the most recently validated value failed validation,
+     *          or null if it passed validation.
+     */
+    public String getValidationReason() {
+        return validationReason;
     }
 }
