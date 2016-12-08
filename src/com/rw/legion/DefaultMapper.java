@@ -26,9 +26,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
-import java.util.HashMap;
-import java.util.HashSet;
-
 /**
  * Default Mapper class used by Legion. Takes a <code>NullWritable</code> key
  * and a <code>LegionRecord</code> value, loops through all output tables and
@@ -72,34 +69,14 @@ public class DefaultMapper
     public void map(NullWritable key, LegionRecord value, Context context)
             throws IOException, InterruptedException {
         
-        /*
-         * allIndexValues maps a comma-separated list of index names to
-         * possible combinations of index values relevant for that combination.
-         * These are stored as a set of maps, each of which maps the names of
-         * indexes to their respective value for that particular combination.
-         * 
-         * Name order in comma-separated keys is always determined by the
-         * order of the name ArrayList in the objective, so consistency is
-         * guaranteed.
-         */
-        HashMap<String, HashSet<HashMap<String, String>>> allIndexValues
-            = value.findIndexValues(objective);
-        
         for (OutputTable outputTable : objective.getOutputTables()) {
             if (outputTable.hasIndexes()) {
-                /*
-                 * Get a list of all possible combinations of index values for
-                 * the index names used in this particular output table.
-                 */
-                
-                HashSet<HashMap<String, String>> tableIndexValues =
-                    allIndexValues.get(
-                        StringUtils.join(outputTable.getIndexNames(), ","));
+                IndexComboEnumerator enumerator =
+                        value.findIndexValues(outputTable);
                 
                 // No need to output this table if there were no index values
-                if (tableIndexValues != null) {
-                    for (HashMap<String, String> indexValues :
-                            tableIndexValues) {
+                if (enumerator.getSize() > 0) {
+                    for (IndexCombo indexCombo : enumerator) {
                         /*
                          * Generate a list of keys to extract from the
                          * LegionRecord by replacing index names with current
@@ -107,23 +84,15 @@ public class DefaultMapper
                          * and output.
                          */
                         String[] modifiedKeys
-                            = new String[outputTable.getColumns().size()];
+                            = outputTable.getColumnKeys().clone();
                         
-                        int i = 0;
-                        
-                        for (OutputColumn column : outputTable.getColumns()) {
-                            String columnKey = column.getKey();
-                            
-                            for (HashMap.Entry<String, String> indexValue
-                                    : indexValues.entrySet()) {
+                        for (int i = 0; i < modifiedKeys.length; i++) {
+                            for (String name : outputTable.getIndexNames()) {
+                                name = "<" + name + ">";
                                 
-                                columnKey = columnKey.replace(
-                                    indexValue.getKey(), indexValue.getValue());
+                                modifiedKeys[i] = modifiedKeys[i].replace(name,
+                                        indexCombo.getValue(name));
                             }
-                            
-                            modifiedKeys[i] = columnKey;
-                            
-                            i++;
                         }
                         
                         tryOutput(outputTable, value, modifiedKeys);

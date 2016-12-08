@@ -19,7 +19,6 @@ package com.rw.legion;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.io.*;
@@ -30,7 +29,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonReader;
 
 import org.apache.hadoop.io.*;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * At its core, this is nothing more than a hash map, which links data keys
@@ -159,79 +157,59 @@ public class LegionRecord implements Writable{
     }
     
     /**
-     * Using information from a <code>legionObjective</code>, find all possible
-     * combinations of index values that appear in this record for the
-     * particular set of indexes used by each <code>OutputTable</code> in the
-     * objective.
+     * Build an <code>IndexComboEnumerator</code> capable of listing all
+     * combinations of index values that appear in this record for the columns
+     * listed in a particular <code>OutputTable</code>.
      * 
-     * @param legionObjective  The objective to use for finding index values.
-     * @return  A map linking a comma-separated list of index names to a set of
-     *          all combinations of index values for those indexes that appears
-     *          in this record. The list of index names used in each key is
-     *          determined by the <code>ArrayList</code> of the indexes in a
-     *          <code>LegionOutput</code>, so order is guaranteed. Each entry in
-     *          each set is a map linking index keys to index values.
+     * @param outputTable  The <code>OutputTable</code> to use for finding index
+     *                     values.
+     * @return  An <code>IndexComboEnumerator</code> that can list all
+     *          combinations of index values in the current record.
      */
-    public HashMap<String, HashSet<HashMap<String, String>>>
-            findIndexValues(LegionObjective legionObjective) {
+    public IndexComboEnumerator findIndexValues(OutputTable outputTable) {
+        IndexComboEnumerator enumerator = new IndexComboEnumerator();
         
-        HashMap<String, HashSet<HashMap<String, String>>> indexValues =
-            new HashMap<String, HashSet<HashMap<String, String>>>();
-        
-        for (OutputTable outputTable : legionObjective.getOutputTables()) {
-            if (outputTable.hasIndexes()) {
-                ArrayList<String> indexes = outputTable.getIndexNames();
-                String indexKey = StringUtils.join(indexes, ",");
-                
-                for (OutputColumn outputColumn : outputTable.getColumns()) {
-                    if (outputColumn.hasIndexes()) {
-                        /*
-                         * Get a pattern that will match data keys that are
-                         * equivalent to the output column key with index values
-                         * substituted for index names, then check the keys in
-                         * this record for matches, and extract the index
-                         * values.
-                         */
-                        Pattern pattern = outputColumn.getKeyPattern();
+        if (outputTable.hasIndexes()) {
+            for (OutputColumn outputColumn : outputTable.getColumns()) {
+                if (outputColumn.hasIndexes()) {
+                    /*
+                     * Get a pattern that will match data keys that are
+                     * equivalent to the output column key with index values
+                     * substituted for index names, then check the keys in this
+                     * record for matches, and extract the index values.
+                     */
+                    Pattern pattern = outputColumn.getKeyPattern();
+                    
+                    for (String dataKey : contents.keySet()) {
+                        Matcher matcher = pattern.matcher(dataKey);
                         
-                        for (String dataKey : contents.keySet()) {
-                            Matcher matcher = pattern.matcher(dataKey);
+                        if (matcher.matches() && matcher.groupCount()
+                                == outputTable.getIndexNames().size()) {
                             
-                            if (matcher.matches() && matcher.groupCount()
-                                    == outputTable.getIndexNames().size()) {
-                                
-                                HashMap<String, String> values =
-                                    new HashMap<String, String>();
-                                
-                                /*
-                                 * Since order of indexes in the data key could
-                                 * be different than specified for the table as
-                                 * a whole (e.g., objective lists idxA, idxB but
-                                 * key is user<idxB>val<idxA>).
-                                 */
-                                ArrayList<String> indexOrder =
-                                    outputColumn.getIndexes();
-                                
-                                for (int i = 0; i < matcher.groupCount(); i++) {
-                                    values.put(indexOrder.get(i),
-                                        matcher.group(i + 1));
-                                }
-                                
-                                if (indexValues.containsKey(indexKey) ==
-                                        false) {
-                                    indexValues.put(indexKey,
-                                        new HashSet<HashMap<String, String>>());
-                                }
-                                
-                                indexValues.get(indexKey).add(values);
+                            IndexCombo indexCombo = new IndexCombo();
+                            
+                            /*
+                             * Since order of indexes in the data key could be
+                             * different than specified for the table as a whole
+                             * (e.g., objective lists idxA, idxB but key is
+                             * user<idxB>val<idxA>).
+                             */
+                            ArrayList<String> indexOrder =
+                                outputColumn.getIndexes();
+                            
+                            for (int i = 0; i < matcher.groupCount(); i++) {
+                                indexCombo.addIndex(indexOrder.get(i),
+                                    matcher.group(i + 1));
                             }
+                            
+                            enumerator.addCombo(indexCombo);
                         }
                     }
                 }
             }
         }
         
-        return indexValues;
+        return enumerator;
     }
     
     /**
