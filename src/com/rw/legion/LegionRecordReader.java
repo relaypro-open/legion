@@ -21,6 +21,8 @@
 package com.rw.legion;
 
 import java.io.IOException;
+
+import org.apache.hadoop.mapreduce.lib.input.*;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
@@ -30,28 +32,36 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.Seekable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.compress.CodecPool;
+import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.io.compress.SplitCompressionInputStream;
+import org.apache.hadoop.io.compress.SplittableCompressionCodec;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
+import org.apache.hadoop.io.compress.Decompressor;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
-import org.apache.hadoop.mapreduce.lib.input.*;
-import org.apache.hadoop.io.compress.*;
 
 /**
- * Produces <code>NullWritable</code> keys and <code>LegionRecord</code> values.
- * There is one <code>LegionRecord</code> per line in a file. Each of those
- * lines can contain either a single CSV record or a single JSON object.
+ * Abstract <code>RecordReader</code> that produces <code>NullWritable</code>
+ * keys and <code>LegionRecord</code> values. Implementations should extend
+ * this class and implement the <code>makeRecord</code> method, which parses
+ * a line from the file using the appropriate format (e.g., CSV, JSON) and
+ * returns a <code>LegionRecord</code>.
+ * 
+ * Produces one <code>LegionRecord</code> per line in a file.
  * 
  * This is simply a modification of the default Hadoop
  * <code>LineRecordReader</code>.
  */
 @InterfaceAudience.LimitedPrivate({"MapReduce", "Pig"})
 @InterfaceStability.Evolving
-public class LegionRecordReader
+public abstract class LegionRecordReader
         extends RecordReader<NullWritable, LegionRecord> {
     private static final Log LOG = LogFactory.getLog(LegionRecordReader.class);
-    public static final String MAX_LINE_LENGTH =
+    public static final String MAX_LINE_LENGTH = 
         "mapreduce.input.linerecordreader.line.maxlength";
 
     private long start;
@@ -66,11 +76,11 @@ public class LegionRecordReader
     private Decompressor decompressor;
     private byte[] recordDelimiterBytes;
     
-    private LegionObjective legionObjective;
-    private boolean isCsv;
+    protected String fileName;
     private boolean fileBroken;
-    private String fileName;
-    private String[] header;
+    protected Text currentLine;
+    protected long currentLineNumber;
+    private LegionObjective legionObjective;
 
     public LegionRecordReader() {
     }
@@ -79,8 +89,8 @@ public class LegionRecordReader
         this.recordDelimiterBytes = recordDelimiter;
     }
 
-    public void initialize(InputSplit genericSplit, TaskAttemptContext context)
-            throws IOException {
+    public void initialize(InputSplit genericSplit,
+            TaskAttemptContext context) throws IOException {
         /*
          * fileBroken tracks whether there's been an IOException while reading
          * this file. If there has, the record reader will simply stop reading
@@ -88,6 +98,8 @@ public class LegionRecordReader
          * job.
          */
         fileBroken = false;
+        currentLine = new Text();
+        currentLineNumber = 0;
         
         FileSplit split = (FileSplit) genericSplit;
         
@@ -99,13 +111,12 @@ public class LegionRecordReader
         Configuration job = context.getConfiguration();
         this.maxLineLength = job.getInt(MAX_LINE_LENGTH, Integer.MAX_VALUE);
         legionObjective = new LegionObjective(job.get("legion_objective"));
-        isCsv = legionObjective.getInputDataType().equals("CSV") ? true : false;
         
         start = split.getStart();
         end = start + split.getLength();
         final Path file = split.getPath();
 
-        // Open the file and seek to the start of the split.
+        // Open the file and seek to the start of the split
         final FileSystem fs = file.getFileSystem(job);
         fileIn = fs.open(file);
         
@@ -163,17 +174,6 @@ public class LegionRecordReader
         }
         
         this.pos = start;
-        
-        // If this is CSV data, get the first line and store it as the header.
-        if (isCsv){ 
-            try {
-                Text tempHeader = new Text();
-                getFirstLine(tempHeader);
-                header = tempHeader.toString().split(",");
-            } catch (IOException e) {
-                fileBroken = true;
-            }
-        }
     }
     
 
@@ -186,6 +186,7 @@ public class LegionRecordReader
 
     private long getFilePosition() throws IOException {
         long retVal;
+        
         if (fileBroken) {
             retVal = end + 1;
         } else if (isCompressedInput && null != filePosition) {
@@ -195,66 +196,68 @@ public class LegionRecordReader
         }
         return retVal;
     }
-    
-    private int getFirstLine(Text line) throws IOException {
-        /*
-         * Strip UTF-8 Byte Order Mark (0xEF,0xBB,0xBF) at the start of the text
-         * stream, if necessary. Increment the file position appropriately,
-         * either way. Read the first line of the file into line. Return the
-         * amount of real data read (less the BOM, if there was one).
-         */
+
+    private int skipUtfByteOrderMark() throws IOException {
+        // Strip BOM(Byte Order Mark)
+        // Text only support UTF-8, we only need to check UTF-8 BOM
+        // (0xEF,0xBB,0xBF) at the start of the text stream.
         int newMaxLineLength = (int) Math.min(3L + (long) maxLineLength,
                 Integer.MAX_VALUE);
-        int newSize = in.readLine(line, newMaxLineLength,
+        int newSize = in.readLine(currentLine, newMaxLineLength,
                 maxBytesToConsume(pos));
-
+        // Even we read 3 extra bytes for the first line,
+        // we won't alter existing behavior (no backwards incompat issue).
+        // Because the newSize is less than maxLineLength and
+        // the number of bytes copied to Text is always no more than newSize.
+        // If the return size from readLine is not less than maxLineLength,
+        // we will discard the current line and read the next line.
         pos += newSize;
-        int textLength = line.getLength();
-        byte[] textBytes = line.getBytes();
-        
+        int textLength = currentLine.getLength();
+        byte[] textBytes = currentLine.getBytes();
         if ((textLength >= 3) && (textBytes[0] == (byte)0xEF) &&
                 (textBytes[1] == (byte)0xBB) && (textBytes[2] == (byte)0xBF)) {
             // find UTF-8 BOM, strip it.
             LOG.info("Found UTF-8 BOM and skipped it");
             textLength -= 3;
-            newSize -=3;
-
+            newSize -= 3;
             if (textLength > 0) {
-                // It may work to use the same buffer and not do the copyBytes.
-                textBytes = line.copyBytes();
-                line.set(textBytes, 3, textLength);
+                // It may work to use the same buffer and not do the copyBytes
+                textBytes = currentLine.copyBytes();
+                currentLine.set(textBytes, 3, textLength);
             } else {
-                line.clear();
+                currentLine.clear();
             }
         }
-        
         return newSize;
     }
-    
+
     public boolean nextKeyValue() throws IOException {
-        value = new LegionRecord();
-        
         int newSize = 0;
-        Text thisLine = new Text();
         
+        // We always read one extra line, which lies outside the upper
+        // split limit i.e. (end - 1)
         while (getFilePosition() <= end ||
                 in.needAdditionalRecordAfterSplit()) {
+            currentLineNumber ++;
+            
             try {
                 if (pos == 0) {
-                    newSize = getFirstLine(thisLine);
+                    newSize = skipUtfByteOrderMark();
                 } else {
-                    newSize = in.readLine(thisLine, maxLineLength,
+                    newSize = in.readLine(currentLine, maxLineLength,
                             maxBytesToConsume(pos));
                     pos += newSize;
                 }
 
                 if ((newSize == 0) || (newSize < maxLineLength)) {
-                    break;
+                    value = makeRecord();
+                    
+                    if (value != null) {
+                        break;
+                    }
                 }
     
-                // Line too long. Try again.
-                LOG.info("Skipped line of size " + newSize + " at pos " +
-                        (pos - newSize));
+                // Line too long, or didn't get turned into a record. Try again.
             } catch(IOException e) {
                 fileBroken = true;
             }
@@ -264,15 +267,6 @@ public class LegionRecordReader
             value = null;
             return false;
         } else {
-            if (isCsv) {
-                value.setFromCsv(header, thisLine.toString());
-            } else {
-                value.setFromJson(thisLine.toString());
-            }
-            
-            value.setField("file_name",  fileName);
-            value.setField("file_position", new Long(pos - newSize).toString());
-            
             return true;
         }
     }
@@ -312,4 +306,6 @@ public class LegionRecordReader
             }
         }
     }
+    
+    protected abstract LegionRecord makeRecord();
 }

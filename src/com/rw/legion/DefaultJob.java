@@ -20,6 +20,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.conf.*;
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapreduce.*;
+import org.apache.hadoop.mapreduce.lib.input.CombineFileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.LazyOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
@@ -86,27 +88,34 @@ public class DefaultJob {
         TextOutputFormat.setCompressOutput(hadoopJob, true);
         TextOutputFormat.setOutputCompressorClass(hadoopJob, GzipCodec.class);
         
-        // If the objective specifies to combine input files
-        if (legionObjective.getCombineFiles()) {
-            hadoopJob.setInputFormatClass(CombineLegionInputFormat.class);
+        // What input format do we use?
+        Class<? extends FileInputFormat<NullWritable, LegionRecord>> inputClass;
         
-            /*
-             * This is the max size (in bytes) that an input split can take
-             * before we create a new one. Bigger is generally better (as long
-             * as there are enough splits for things to be done in parallel).
-             * Sometimes, limiting is necessary to keep the list of files in a
-             * split from getting too big and causing memory problems.
-             */
-            CombineLegionInputFormat.setMaxInputSplitSize(hadoopJob,
-                legionObjective.getMaxCombinedSize());
+        if (legionObjective.getCombineFiles()) {
+            if (legionObjective.getInputDataType().equals("CSV")) {
+                inputClass = CombineCsvInputFormat.class;
+            } else {
+                inputClass = CombineJsonInputFormat.class;
+            }
             
-            CombineLegionInputFormat.setInputDirRecursive(hadoopJob, true);
-            CombineLegionInputFormat.addInputPath(hadoopJob, new Path(args[0]));
+            CombineFileInputFormat.setMaxInputSplitSize(hadoopJob,
+                    legionObjective.getMaxCombinedSize());
         } else {
-            hadoopJob.setInputFormatClass(LegionInputFormat.class);
-            LegionInputFormat.setInputDirRecursive(hadoopJob, true);
-            LegionInputFormat.addInputPath(hadoopJob, new Path(args[0]));
+            if (legionObjective.getInputDataType().equals("CSV")) {
+                inputClass = CsvInputFormat.class;
+            } else {
+                inputClass = JsonInputFormat.class;
+            }
         }
+       
+        hadoopJob.setInputFormatClass(inputClass);
+    
+        /* 
+         * These are just static convenience methods, so it doesn't matter if
+         * they come from the wrong class.
+         */
+        FileInputFormat.setInputDirRecursive(hadoopJob, true);
+        FileInputFormat.addInputPath(hadoopJob, new Path(args[0]));
         
         FileOutputFormat.setOutputPath(hadoopJob, new Path(args[1]));
         
