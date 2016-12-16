@@ -18,22 +18,16 @@ package com.rw.legion;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.io.*;
-
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonElement;
-import com.google.gson.stream.JsonReader;
 
 import org.apache.hadoop.io.*;
 
 /**
  * At its core, this is nothing more than a hash map, which links data keys
- * (either CSV column headers or JSON attributes) to the values associated with
- * those keys (data in a CSV row, or JSON values).
+ * (e.g., CSV column headers) to the values associated with those keys (e.g.,
+ * data in a CSV row).
  */
 public class LegionRecord implements Writable{
     private HashMap<String, String> contents;
@@ -67,51 +61,6 @@ public class LegionRecord implements Writable{
             String value = in.readUTF();
             
             contents.put(key, value);
-        }
-    }
-    
-    /**
-     * Set the contents of the <code>LegionRecord</code> to a row from a CSV
-     * file.
-     * 
-     * @param header  CSV header, from which column keys will be extracted.
-     * @param rawLine  CSV record, from which data will be extracted.
-     */
-    public void setFromCsv(String[] header, String rawLine) {
-        /*
-         *  Supply the header length to split() in case there are trailing null
-         *  fields.
-         */
-        String[] lineParts = rawLine.split(",", header.length);
-        
-        if (header.length == lineParts.length) {
-            for (int i = 0; i < lineParts.length; i++) {
-                contents.put(header[i],  lineParts[i]);
-            }
-        }
-    }
-    
-    /**
-     * Set the contents of the <code>LegionRecord</code> using a JSON object.
-     * 
-     * @param rawLine  A JSON object, from which keys and data will be
-     *                 extracted.
-     */
-    public void setFromJson(String rawLine) {
-        try {
-            JsonReader jsonReader = new JsonReader(new StringReader(rawLine));
-            jsonReader.setLenient(true);
-            JsonParser jsonParser = new JsonParser();
-            JsonElement mainElement = jsonParser.parse(jsonReader);
-            traverseJson("$", mainElement);
-        } catch(JsonSyntaxException e) {
-            /*
-             * Should probably make it explicit in code that this gets handled
-             * gracefully in the future. For now, all keys in the record will be
-             * absent, so the record will simply fail to pass validation and be
-             * ignored (unless absentAsNull is true for all columns, in which
-             * case the row will be all nulls).
-             */
         }
     }
     
@@ -210,31 +159,5 @@ public class LegionRecord implements Writable{
         }
         
         return enumerator;
-    }
-    
-    /**
-     * Recursively traverses all levels of a JSON object and adds their contents
-     * to the <code>LegionRecord</code>. Keys are formatted using a simplified
-     * JSON path with dot notation (http://goessner.net/articles/JsonPath/).
-     * 
-     * @param location  The JSON path leading up to the current depth level.
-     * @param element  An element that appears at the current depth level.
-     */
-    private void traverseJson(String location, JsonElement element) {
-        if (element.isJsonNull()) {
-            contents.put(location, "");
-        } else if (element.isJsonPrimitive()) {
-            contents.put(location, element.getAsString());
-        } else if (element.isJsonObject()) {
-            for (Map.Entry<String, JsonElement> entry :
-                    element.getAsJsonObject().entrySet()) {
-                traverseJson(location + "." + entry.getKey(), entry.getValue());
-            }
-        } else if (element.isJsonArray()) {
-            for (int i = 0; i < element.getAsJsonArray().size(); i++ ) {
-                traverseJson(location + "[" + new Integer(i).toString() + "]",
-                    element.getAsJsonArray().get(i));
-            }
-        }
     }
 }

@@ -31,12 +31,12 @@ import org.apache.hadoop.fs.Path;
 
 /**
  * Input format that is a <code>CombineFileInputFormat</code>-equivalent for
- * <code>LegionInputFormat</code>.
+ * <code>JsonInputFormat</code>.
  * 
- * @see LegionInputFormat
+ * @see JsonInputFormat
  */
 
-public class CombineLegionInputFormat
+public class CombineJsonInputFormat
         extends CombineFileInputFormat<NullWritable, LegionRecord> {
     
     public RecordReader<NullWritable, LegionRecord> createRecordReader(
@@ -68,7 +68,7 @@ public class CombineLegionInputFormat
                 TaskAttemptContext context, Integer idx)
                 throws IOException, InterruptedException {
             
-            super(new LegionInputFormat(), split, context, idx);
+            super(new JsonInputFormat(), split, context, idx);
         }
     }
 }

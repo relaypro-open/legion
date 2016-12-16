@@ -37,30 +37,30 @@ import org.apache.hadoop.io.compress.SplittableCompressionCodec;
 import com.google.common.base.Charsets;
 
 /** 
- * An <code>InputFormat</code> for Legion. Essentially, the default Hadoop
- * <code>TextInputFormat</code> modified to use the
- * <code>LegionRecordReader</code>.
+ * An <code>InputFormat</code> for <code>JsonRecordReader</code>. Essentially,
+ * the default Hadoop <code>TextInputFormat</code> modified to use the
+ * <code>JsonRecordReader</code>.
  */
 
 @InterfaceAudience.Public
 @InterfaceStability.Stable
-public class LegionInputFormat
+public class JsonInputFormat
         extends FileInputFormat<NullWritable, LegionRecord> {
     private LegionObjective legionObjective;
 
     @Override
     public RecordReader<NullWritable, LegionRecord>
             createRecordReader(InputSplit split, TaskAttemptContext context) {
-        Configuration job = context.getConfiguration();
-        legionObjective = new LegionObjective(job.get("legion_objective"));
         
-        String delimiter= context.getConfiguration().get(
+        String delimiter = context.getConfiguration().get(
                 "textinputformat.record.delimiter");
         
         byte[] recordDelimiterBytes = null;
+        
         if (null != delimiter)
             recordDelimiterBytes = delimiter.getBytes(Charsets.UTF_8);
-        return new LegionRecordReader(recordDelimiterBytes);
+        
+        return new JsonRecordReader(recordDelimiterBytes);
     }
 
     @Override
@@ -68,15 +68,6 @@ public class LegionInputFormat
             CompressionCodec codec;
         Configuration job = context.getConfiguration();
         legionObjective = new LegionObjective(job.get("legion_objective"));
-        
-        /*
-         * Legion doesn't currently support splitting CSVs, because the header
-         * would only be in the first split. A fix can be investigated for a
-         * future release, though.
-         */
-        if (legionObjective.getInputDataType() == "CSV") {
-            return false;
-        }
         
         if (legionObjective.getCodecOverride() != null) {
             codec = new CompressionCodecFactory(context.getConfiguration())
