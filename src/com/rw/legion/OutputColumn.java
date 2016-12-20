@@ -161,6 +161,8 @@ public class OutputColumn {
             }
         }
         
+        System.out.println("Key is " + keyOverride + " and value is '" + value.getData(keyOverride) + "'.");
+        
         /*
          * Unless this is a blank value and blanks are allowed, evaluate the
          * data to see if it matches the validation pattern for this column.

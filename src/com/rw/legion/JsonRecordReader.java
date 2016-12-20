@@ -53,6 +53,7 @@ public class JsonRecordReader extends LegionRecordReader {
      */
     protected LegionRecord makeRecord() {
         String lineString = currentLine.toString();
+        
         record = new LegionRecord();
         record.setField("file_name", fileName);
         record.setField("file_line", Long.toString(currentLineNumber));
@@ -65,7 +66,7 @@ public class JsonRecordReader extends LegionRecordReader {
             JsonElement mainElement = jsonParser.parse(jsonReader);
             traverseJson("$", mainElement);
         } catch(JsonSyntaxException e) {
-           return null;
+            return null;
         }
         
         return record;

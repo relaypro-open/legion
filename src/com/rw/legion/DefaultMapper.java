@@ -133,7 +133,6 @@ public class DefaultMapper
      */
     private void tryOutput(OutputTable outputTable, LegionRecord value,
             String[] keyList) throws IOException, InterruptedException {
-        
         int i = 0;
         boolean validates = true;
         
