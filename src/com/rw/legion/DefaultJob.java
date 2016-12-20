@@ -74,7 +74,8 @@ public class DefaultJob {
         conf.setStrings("legion_objective", json);
         
         // De-serialize the objective so we can access the settings here.
-        LegionObjective legionObjective = new LegionObjective(json);
+        LegionObjective legionObjective =
+                ObjectiveDeserializer.deserialize(json);
         
         // Start configuring the MapReduce job.
         Job hadoopJob = Job.getInstance(conf, "Legion");

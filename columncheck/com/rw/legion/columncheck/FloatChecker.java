@@ -16,15 +16,13 @@
 
 package com.rw.legion.columncheck;
 
-import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
-public class FloatChecker {
+public class FloatChecker implements ColumnChecker {
     private String floatType;
-    private Properties props;
-    private Gson gson;
     
-    public FloatChecker() {
-        gson = new Gson();
+    public FloatChecker(JsonObject json) {
+        floatType = json.get("floatType").getAsString();
     }
     
     public boolean validates(String str) {
@@ -35,24 +33,6 @@ public class FloatChecker {
             return true;
         } catch(NumberFormatException e) {
             return false;
-        }
-    }
-    
-    public void fromJson(String json) {
-        props = gson.fromJson(json, Properties.class);
-        
-        floatType = props.getFloatType();
-    }
-    
-    public String toJson() {
-        return gson.toJson(props);
-    }
-    
-    static class Properties {
-        String floatType;
-        
-        public String getFloatType() {
-            return floatType;
         }
     }
 }

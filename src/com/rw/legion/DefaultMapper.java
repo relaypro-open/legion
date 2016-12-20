@@ -50,7 +50,8 @@ public class DefaultMapper
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setup(Context context) {
         Configuration config = context.getConfiguration();
-        this.objective = new LegionObjective(config.get("legion_objective"));
+        this.objective =ObjectiveDeserializer.deserialize(
+                config.get("legion_objective"));
         outputWriters = new MultipleOutputs(context);
     }
     

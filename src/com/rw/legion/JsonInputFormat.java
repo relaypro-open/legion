@@ -67,7 +67,8 @@ public class JsonInputFormat
     protected boolean isSplitable(JobContext context, Path file) {
             CompressionCodec codec;
         Configuration job = context.getConfiguration();
-        legionObjective = new LegionObjective(job.get("legion_objective"));
+        legionObjective =
+                ObjectiveDeserializer.deserialize(job.get("legion_objective"));
         
         if (legionObjective.getCodecOverride() != null) {
             codec = new CompressionCodecFactory(context.getConfiguration())

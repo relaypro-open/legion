@@ -16,7 +16,13 @@
 
 package com.rw.legion.columncheck;
 
-public class BoolChecker {
+import com.google.gson.JsonObject;
+
+public class BoolChecker implements ColumnChecker {
+    public BoolChecker(JsonObject json) {
+        
+    }
+    
     public boolean validates(String str) {
         return "TRUE".equalsIgnoreCase(str)
                 || "T".equals(str)
@@ -24,17 +30,5 @@ public class BoolChecker {
                 || "FALSE".equalsIgnoreCase(str)
                 || "F".equals(str)
                 || "0".equals(str);
-    }
-    
-    public void fromJson(String json) {
-        // Nothing to do here.
-    }
-    
-    public String toJson() {
-        return "";
-    }
-    
-    static class Properties {
-        // No properties...
     }
 }

@@ -17,38 +17,17 @@
 package com.rw.legion.columncheck;
 
 import java.util.regex.Pattern;
-import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
-public class RegexChecker {
-    private String regex;
+public class RegexChecker implements ColumnChecker {
     private Pattern pattern;
-    private Properties props;
-    private Gson gson;
     
-    public RegexChecker() {
-        gson = new Gson();
+    public RegexChecker(JsonObject json) {
+        String regex = json.get("regex").getAsString();
+        pattern = Pattern.compile(regex);
     }
     
     public boolean validates(String str) {
         return pattern.matcher(str).matches();
-    }
-    
-    public void fromJson(String json) {
-        props = gson.fromJson(json, Properties.class);
-        
-        regex = props.getRegex();
-        pattern = Pattern.compile(regex);
-    }
-    
-    public String toJson() {
-        return gson.toJson(props);
-    }
-    
-    static class Properties {
-        String regex;
-        
-        public String getRegex() {
-            return regex;
-        }
     }
 }

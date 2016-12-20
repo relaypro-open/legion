@@ -110,7 +110,8 @@ public abstract class LegionRecordReader
         // Load the Legion Objective.
         Configuration job = context.getConfiguration();
         this.maxLineLength = job.getInt(MAX_LINE_LENGTH, Integer.MAX_VALUE);
-        legionObjective = new LegionObjective(job.get("legion_objective"));
+        legionObjective =
+                ObjectiveDeserializer.deserialize(job.get("legion_objective"));
         
         start = split.getStart();
         end = start + split.getLength();

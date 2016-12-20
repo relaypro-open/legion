@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.ArrayList;
 import java.util.HashMap;
+import com.rw.legion.columncheck.ColumnChecker;
 
 /**
  * A column in a Legion <code>OutputTable</code>. The column contains a key
@@ -31,18 +32,17 @@ import java.util.HashMap;
  */
 
 public class OutputColumn {
+    // These will be automatically de-serialized by Gson.
     private String key;
-    private String dataType;
-    private String regex;
-    private Boolean allowNulls;
-    private Boolean absentAsNull;
-    private String nullSubstitute;
+    private Boolean allowNulls = true;
+    private Boolean absentAsNull = true;
+    private String nullSubstitute = "";
     
-    private Pattern validationPattern;
+    // These will get set up when initialize() is called.
+    private ColumnChecker checker;
     private ArrayList<String> indexes;
     private boolean hasIndexes;
     private Pattern keyPattern;
-    private boolean initialized = false;
     private String validationReason;
     
     /**
@@ -52,27 +52,20 @@ public class OutputColumn {
         
     }
     
-    private void initialize() {
-        if (initialized == false) {
-            // Set to default values
-            allowNulls = allowNulls == null ? true : allowNulls;
-            absentAsNull = absentAsNull == null ? true : absentAsNull;
-            regex = regex == null ? "" : regex;
-            nullSubstitute = nullSubstitute == null ? "" : nullSubstitute;
-            
-            indexes = new ArrayList<String>();
-            hasIndexes = false;
-            String keyRegex = "^\\Q" + key + "\\E$";
-            Matcher m = Pattern.compile("<.*?>").matcher(key);
-            
-            while (m.find()) {
-                hasIndexes = true;
-                indexes.add(m.group());
-                keyRegex = keyRegex.replace(m.group(), "\\E([0-9]+)\\Q");
-            }
-            
-            keyPattern = Pattern.compile(keyRegex);
+    public void initialize(ColumnChecker checker) {
+        this.checker = checker;
+        indexes = new ArrayList<String>();
+        hasIndexes = false;
+        String keyRegex = "^\\Q" + key + "\\E$";
+        Matcher m = Pattern.compile("<.*?>").matcher(key);
+        
+        while (m.find()) {
+            hasIndexes = true;
+            indexes.add(m.group());
+            keyRegex = keyRegex.replace(m.group(), "\\E([0-9]+)\\Q");
         }
+        
+        keyPattern = Pattern.compile(keyRegex);
     }
     
     /**
@@ -93,8 +86,6 @@ public class OutputColumn {
      *          <code>LegionRecord</code> and place in this column.
      */
     public String getKey(HashMap<String, String> indexValues) {
-        initialize();
-        
         String tempKey = key;
         
         for (HashMap.Entry<String, String> entry : indexValues.entrySet()) {
@@ -111,8 +102,6 @@ public class OutputColumn {
      *          combinations of index values present in a file.
      */
     public Pattern getKeyPattern() {
-        initialize();
-        
         return keyPattern;
     }
     
@@ -120,8 +109,6 @@ public class OutputColumn {
      * @return  A list of all indexes used in this column key.
      */
     public ArrayList<String> getIndexes() {
-        initialize();
-        
         return indexes;
     }
     
@@ -129,8 +116,6 @@ public class OutputColumn {
      * @return  Whether this column key uses indexes.
      */
     public boolean hasIndexes() {
-        initialize();
-        
         return hasIndexes;
     }
     
@@ -154,7 +139,6 @@ public class OutputColumn {
      *          the supplied <code>LegionRecord</code>.
      */
     public boolean validates(String keyOverride, LegionRecord value) {
-        initialize();
         validationReason = null;
 	
         // If the key is absent, either fail or set it to blank
@@ -182,27 +166,8 @@ public class OutputColumn {
          * data to see if it matches the validation pattern for this column.
          */
         if ((value.getData(keyOverride).equals("") && allowNulls) == false) {
-            if (validationPattern == null) {
-                if (regex.equals("")) {
-                    if (dataType.equals("String")) {
-                        regex = ".*";
-                    } else if (dataType.equals("Int")) {
-                        regex = "^-?\\d+$";
-                    } else if (dataType.equals("Float")) {
-                        regex = "^-?\\d*\\.?\\d+$";
-                    } else if (dataType.equals("Scientific")) {
-                        regex = "^-?\\d*\\.?\\d+([eE][-+]?\\d+)?$";
-                    } else if (dataType.equals("Boolean")) {
-                        regex = "^0|1|True|False|true|false|T|F|t|f$";
-                    }
-                }
-                
-                validationPattern = Pattern.compile(regex);
-            }
-            
-            if (validationPattern.matcher(value.getData(keyOverride))
-                    .matches() == false) {
-                validationReason = "regex";
+            if (! checker.validates(value.getData(keyOverride))) {
+                validationReason = "content check";
                 return false;
             }
         }

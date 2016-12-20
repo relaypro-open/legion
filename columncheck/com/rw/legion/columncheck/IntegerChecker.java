@@ -16,16 +16,18 @@
 
 package com.rw.legion.columncheck;
 
-import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
-public class IntegerChecker {
+public class IntegerChecker implements ColumnChecker {
     private int safeLength;
     private String intType;
-    private Properties props;
-    private Gson gson;
     
-    public IntegerChecker() {
-        gson = new Gson();
+    public IntegerChecker(JsonObject json) {
+        intType = json.get("intType").getAsString();
+        
+        if (intType.equals("short")) safeLength = 4;
+        else if (intType.equals("int")) safeLength = 9;
+        else if (intType.equals("long")) safeLength = 15;
     }
     
     public boolean validates(String str) {
@@ -71,27 +73,5 @@ public class IntegerChecker {
         }
         
         return true;
-    }
-    
-    public void fromJson(String json) {
-        props = gson.fromJson(json, Properties.class);
-        
-        intType = props.getIntType();
-        
-        if (intType.equals("short")) safeLength = 4;
-        else if (intType.equals("int")) safeLength = 9;
-        else if (intType.equals("long")) safeLength = 15;
-    }
-    
-    public String toJson() {
-        return gson.toJson(props);
-    }
-    
-    static class Properties {
-        String intType;
-        
-        public String getIntType() {
-            return intType;
-        }
     }
 }

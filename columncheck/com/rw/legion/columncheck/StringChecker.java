@@ -16,20 +16,14 @@
 
 package com.rw.legion.columncheck;
 
-public class StringChecker {
+import com.google.gson.JsonObject;
+
+public class StringChecker implements ColumnChecker {
+    public StringChecker(JsonObject json) {
+        
+    }
+    
     public boolean validates(String str) {
         return true;
-    }
-    
-    public void fromJson(String json) {
-        // Nothing to do here.
-    }
-    
-    public String toJson() {
-        return "";
-    }
-    
-    static class Properties {
-        // No properties...
     }
 }
