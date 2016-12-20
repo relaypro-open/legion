@@ -48,4 +48,38 @@ public class IndexCombo {
     public String getValue(String index) {
         return(hashMap.get(index));
     }
+    
+    /**
+     * Get a copy of the hashMap to facilitate overriding equals.
+     * 
+     * @return  The hashMap.
+     */
+    public HashMap<String, String> getHashMap() {
+        return hashMap;
+    }
+    
+    /**
+     * Override default <code>hashCode()</code> so that the
+     * <code>IndexComboEnumerator</code> will know when IndexCombos are
+     * equivalent.
+     */
+    @Override
+    public int hashCode() {
+        return hashMap.hashCode();
+    }
+    
+    /**
+     * Override default <code>equals()</code> so that the
+     * <code>IndexComboEnumerator</code> will know when IndexCombos are
+     * equivalent.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (! (obj instanceof IndexCombo)) return false;
+        if (obj == this) return true;
+        
+        return hashMap.equals(((IndexCombo) obj).getHashMap());
+
+        
+    }
 }
