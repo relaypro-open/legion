@@ -10,7 +10,9 @@ import com.google.gson.JsonObject;
 
 import java.lang.reflect.Type;
 
-import com.rw.legion.columncheck.*;
+import com.rw.legion.columncheck.ColumnChecker;
+import com.rw.legion.columncheck.StringChecker;
+import com.rw.legion.columntransform.ColumnTransformer;
 
 public class ObjectiveDeserializer {
     public static LegionObjective deserialize(String json) {
@@ -35,17 +37,19 @@ public class ObjectiveDeserializer {
             OutputColumn column = new Gson().fromJson(json, OutputColumn.class);
             
             JsonObject obj = json.getAsJsonObject();
+            
+            // Instantiate a column checker for this column
             ColumnChecker checker = null;
             
-            if (obj.has("validation")) {
-                JsonObject validation = obj.getAsJsonObject("validation");
+            if (obj.has("validate")) {
+                JsonObject validate = obj.getAsJsonObject("validate");
                 
-                String checkerName = validation.get("class").getAsString();
+                String checkerName = validate.get("class").getAsString();
                 
                 JsonObject checkerProps = new JsonObject();
                 
-                if (validation.has("options")) {
-                    checkerProps = validation.getAsJsonObject("options");
+                if (validate.has("options")) {
+                    checkerProps = validate.getAsJsonObject("options");
                 }
                 
                 try {
@@ -63,7 +67,36 @@ public class ObjectiveDeserializer {
                 checker = new StringChecker(new JsonObject());
             }
             
-            column.initialize(checker);
+            
+            // Instantiate a column transformer for this column
+            ColumnTransformer transformer = null;
+            
+            if (obj.has("transform")) {
+                JsonObject transform = obj.getAsJsonObject("transform");
+                
+                String transformerName = transform.get("class").getAsString();
+                
+                JsonObject checkerProps = new JsonObject();
+                
+                if (transform.has("options")) {
+                    checkerProps = transform.getAsJsonObject("options");
+                }
+                
+                try {
+                    @SuppressWarnings("rawtypes")
+                    Class[] argFormat = new Class[]{JsonObject.class};
+                    
+                    transformer = (ColumnTransformer) Class
+                            .forName(transformerName)
+                            .getDeclaredConstructor(argFormat)
+                            .newInstance(checkerProps);
+                } catch (Exception e) {
+                    throw new JsonParseException("Problem loading column " +
+                            "transform class '" + transformerName + "'");
+                }
+            }
+            
+            column.initialize(checker, transformer);
             
             return column;
         }

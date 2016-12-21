@@ -140,6 +140,8 @@ public class DefaultMapper
         
         for (OutputColumn column : outputTable.getColumns()) {
             if (column.validates(keyList[i], value)) {
+                column.transform(value);
+                
                 dataToWrite[i]
                     = StringEscapeUtils.escapeCsv(value.getData(keyList[i]));
             } else {

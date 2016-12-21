@@ -21,6 +21,7 @@ import java.util.regex.Matcher;
 import java.util.ArrayList;
 import java.util.HashMap;
 import com.rw.legion.columncheck.ColumnChecker;
+import com.rw.legion.columntransform.ColumnTransformer;
 
 /**
  * A column in a Legion <code>OutputTable</code>. The column contains a key
@@ -40,6 +41,7 @@ public class OutputColumn {
     
     // These will get set up when initialize() is called.
     private ColumnChecker checker;
+    private ColumnTransformer transformer;
     private ArrayList<String> indexes;
     private boolean hasIndexes;
     private Pattern keyPattern;
@@ -52,8 +54,10 @@ public class OutputColumn {
         
     }
     
-    public void initialize(ColumnChecker checker) {
+    public void initialize(ColumnChecker checker,
+            ColumnTransformer transformer) {
         this.checker = checker;
+        this.transformer = transformer;
         indexes = new ArrayList<String>();
         hasIndexes = false;
         String keyRegex = "^\\Q" + key + "\\E$";
@@ -182,6 +186,12 @@ public class OutputColumn {
         }
         
         return true;
+    }
+    
+    public void transform(LegionRecord value) {
+        if (transformer != null) {
+            value.setField(key, transformer.transform(value.getData(key)));
+        }
     }
     
     /**

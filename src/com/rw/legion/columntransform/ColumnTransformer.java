@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-package com.rw.legion.columncheck;
+package com.rw.legion.columntransform;
 
-public interface ColumnChecker {
-    public boolean validates(String str);
+public interface ColumnTransformer {
+    public String transform(String str);
 }
