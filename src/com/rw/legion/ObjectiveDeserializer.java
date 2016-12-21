@@ -7,7 +7,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonObject;
+
 import java.lang.reflect.Type;
+
 import com.rw.legion.columncheck.*;
 
 public class ObjectiveDeserializer {
@@ -33,25 +35,33 @@ public class ObjectiveDeserializer {
             OutputColumn column = new Gson().fromJson(json, OutputColumn.class);
             
             JsonObject obj = json.getAsJsonObject();
-            
-            String checkerName = obj.get("validation").getAsJsonObject().
-                    get("class").getAsString();
-            JsonObject checkerProps = obj.get("validation").getAsJsonObject().
-                    get("options").getAsJsonObject();
-            
-            // Eventually, will be replaced with reflection...
             ColumnChecker checker = null;
             
-            if (checkerName.equals("BoolChecker")) checker =
-                    new BoolChecker(checkerProps);
-            if (checkerName.equals("FloatChecker")) checker =
-                    new FloatChecker(checkerProps);
-            if (checkerName.equals("IntegerChecker")) checker =
-                    new IntegerChecker(checkerProps);
-            if (checkerName.equals("RegexChecker")) checker =
-                    new RegexChecker(checkerProps);
-            if (checkerName.equals("StringChecker")) checker =
-                    new StringChecker(checkerProps);
+            if (obj.has("validation")) {
+                JsonObject validation = obj.getAsJsonObject("validation");
+                
+                String checkerName = validation.get("class").getAsString();
+                
+                JsonObject checkerProps = new JsonObject();
+                
+                if (validation.has("options")) {
+                    checkerProps = validation.getAsJsonObject("options");
+                }
+                
+                try {
+                    @SuppressWarnings("rawtypes")
+                    Class[] argFormat = new Class[]{JsonObject.class};
+                    
+                    checker = (ColumnChecker) Class.forName(checkerName)
+                            .getDeclaredConstructor(argFormat)
+                            .newInstance(checkerProps);
+                } catch (Exception e) {
+                    throw new JsonParseException("Problem loading column " +
+                            "check class '" + checkerName + "'");
+                }
+            } else {
+                checker = new StringChecker(new JsonObject());
+            }
             
             column.initialize(checker);
             

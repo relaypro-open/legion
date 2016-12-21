@@ -147,7 +147,7 @@ public class DefaultMapper
                 dataToWrite[0] = value.getData("file_name");
                 dataToWrite[1] = value.getData("file_line");
                 dataToWrite[2] = column.getKey();
-                dataToWrite[3] = column.getValidationReason();
+                dataToWrite[3] = column.getFailureReason();
                         
                 validates = false;
                 break;

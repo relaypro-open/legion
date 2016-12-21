@@ -18,11 +18,16 @@ package com.rw.legion.columncheck;
 
 import java.util.regex.Pattern;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 
 public class RegexChecker implements ColumnChecker {
     private Pattern pattern;
     
-    public RegexChecker(JsonObject json) {
+    public RegexChecker(JsonObject json) throws JsonParseException {
+        if (! (json.has("regex"))) {
+            throw new JsonParseException("RegexChecker requires regex!");
+        }
+        
         String regex = json.get("regex").getAsString();
         pattern = Pattern.compile(regex);
     }

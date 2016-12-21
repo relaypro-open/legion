@@ -34,16 +34,16 @@ import com.rw.legion.columncheck.ColumnChecker;
 public class OutputColumn {
     // These will be automatically de-serialized by Gson.
     private String key;
-    private Boolean allowNulls = true;
-    private Boolean absentAsNull = true;
-    private String nullSubstitute = "";
+    private Boolean failOnAbsent = false;
+    private Boolean failOnNull = false;
+    private Boolean failOnValidation = false;
     
     // These will get set up when initialize() is called.
     private ColumnChecker checker;
     private ArrayList<String> indexes;
     private boolean hasIndexes;
     private Pattern keyPattern;
-    private String validationReason;
+    private String failureReason;
     
     /**
      * Empty constructor for GSON.
@@ -139,38 +139,45 @@ public class OutputColumn {
      *          the supplied <code>LegionRecord</code>.
      */
     public boolean validates(String keyOverride, LegionRecord value) {
-        validationReason = null;
+        failureReason = null;
 	
-        // If the key is absent, either fail or set it to blank
+        /*
+         *  If the key is absent, either fail the record or set it to null
+         *  (blank).
+         */
         if (value.getData(keyOverride) == null) {
-            if (absentAsNull) {
-                value.setField(keyOverride, "");
+            if (failOnAbsent) {
+                failureReason = "key absent";
+                return false;
             } else {
-                validationReason = "key absent";
-                return false;
+                value.setField(keyOverride, "");
             }
         }
         
-        // If the value is blank, fail, replace it with something, or do nothing
+        // If the value is null (blank), either fail the record or do nothing.
         if (value.getData(keyOverride).equals("")) {
-            if (allowNulls == false) {
-                validationReason = "value blank";
+            if (failOnNull) {
+                failureReason = "null not allowed";
                 return false;
-            } else if (!nullSubstitute.equals("")) {
-                value.setField(keyOverride, nullSubstitute);
             }
         }
-        
-        System.out.println("Key is " + keyOverride + " and value is '" + value.getData(keyOverride) + "'.");
         
         /*
-         * Unless this is a blank value and blanks are allowed, evaluate the
-         * data to see if it matches the validation pattern for this column.
+         * Unless this is a null (blank) value, validate the data using the
+         * <code>ColumnCheck</code> for this column.
          */
-        if ((value.getData(keyOverride).equals("") && allowNulls) == false) {
+        if (! value.getData(keyOverride).equals("")) {
             if (! checker.validates(value.getData(keyOverride))) {
-                validationReason = "content check";
-                return false;
+                /*
+                 * Fail the record if necessary (including if failOnNull is
+                 * true, because then we can't replace with null.
+                 */
+                if (failOnValidation || failOnNull) {
+                    failureReason = "data validation failed";
+                    return false;
+                } else {
+                    value.setField(keyOverride,  "");
+                }
             }
         }
         
@@ -181,7 +188,7 @@ public class OutputColumn {
      * @return  The reason the most recently validated value failed validation,
      *          or null if it passed validation.
      */
-    public String getValidationReason() {
-        return validationReason;
+    public String getFailureReason() {
+        return failureReason;
     }
 }

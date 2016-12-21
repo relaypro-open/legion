@@ -79,7 +79,5 @@ public class IndexCombo {
         if (obj == this) return true;
         
         return hashMap.equals(((IndexCombo) obj).getHashMap());
-
-        
     }
 }

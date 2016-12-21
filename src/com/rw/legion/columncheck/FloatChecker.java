@@ -22,7 +22,11 @@ public class FloatChecker implements ColumnChecker {
     private String floatType;
     
     public FloatChecker(JsonObject json) {
-        floatType = json.get("floatType").getAsString();
+        if (! (json.has("floatType"))) {
+            floatType = "double";
+        } else {
+            floatType = json.get("floatType").getAsString();
+        }
     }
     
     public boolean validates(String str) {

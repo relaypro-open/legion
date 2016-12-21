@@ -23,11 +23,16 @@ public class IntegerChecker implements ColumnChecker {
     private String intType;
     
     public IntegerChecker(JsonObject json) {
-        intType = json.get("intType").getAsString();
-        
-        if (intType.equals("short")) safeLength = 4;
-        else if (intType.equals("int")) safeLength = 9;
-        else if (intType.equals("long")) safeLength = 15;
+        if (! (json.has("intType"))) {
+            intType = "int";
+            safeLength = 9;
+        } else {
+            intType = json.get("intType").getAsString();
+            
+            if (intType.equals("short")) safeLength = 4;
+            else if (intType.equals("int")) safeLength = 9;
+            else if (intType.equals("long")) safeLength = 15;
+        }
     }
     
     public boolean validates(String str) {
