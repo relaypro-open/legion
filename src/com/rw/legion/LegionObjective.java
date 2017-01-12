@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Republic Wireless
+ * Copyright (C) 2017 Republic Wireless
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,9 @@ import java.util.ArrayList;
  */
 
 public class LegionObjective {
-    public String inputDataType;
+    public String inputFormat;
     public String codecOverride;
-    public boolean combineFiles;
-    public int maxCombinedSize;
+    public Integer maxCombinedSize;
     public ArrayList<OutputTable> outputTables;
     
     /**
@@ -44,10 +43,11 @@ public class LegionObjective {
     }
     
     /**
-     * @return  Either JSON or CSV, depending on data type.
+     * @return  Returns the canonical class name of the input format to use for
+     * this job.
      */
-    public String getInputDataType() {
-        return inputDataType;
+    public String getInputFormat() {
+        return inputFormat;
     }
     
     /**
@@ -66,17 +66,10 @@ public class LegionObjective {
     }
     
     /**
-     * @return  Whether or not input files should be combined for this job.
-     */
-    public boolean getCombineFiles() {
-        return combineFiles;
-    }
-    
-    /**
      * @return  Maximum size of an input split to create by combining input
      * files with <code>CombineLegionInputFormat</code>.
      */
-    public int getMaxCombinedSize() {
+    public Integer getMaxCombinedSize() {
         return maxCombinedSize;
     }
 }

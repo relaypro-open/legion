@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Republic Wireless
+ * Copyright (C) 2017 Republic Wireless
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,10 @@
 package com.rw.legion.columncheck;
 
 import com.google.gson.JsonObject;
+
+/**
+ * A column checker that validates a string is a string. Always returns true.
+ */
 
 public class StringChecker implements ColumnChecker {
     public StringChecker(JsonObject json) {

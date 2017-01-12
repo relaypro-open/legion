@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Republic Wireless
+ * Copyright (C) 2017 Republic Wireless
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,13 @@ package com.rw.legion.columntransform;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+
+
+/**
+ * A <code>ColumnTransformer</code> which takes a null value in a column and
+ * replaces it with a specified string. Requires the property "replacement" in
+ * the Objective JSON.
+ */
 
 public class NullReplaceTransformer implements ColumnTransformer {
     private String replacement;

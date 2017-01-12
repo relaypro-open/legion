@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Republic Wireless
+ * Copyright (C) 2017 Republic Wireless
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,11 @@ package com.rw.legion.columncheck;
 import java.util.regex.Pattern;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+
+/**
+ * A column checker that validates a string matches a given regex. Requires a
+ * "pattern" parameter in the objective JSON.
+ */
 
 public class RegexChecker implements ColumnChecker {
     private Pattern pattern;

@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2017 Republic Wireless
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.rw.legion;
 
 import com.google.gson.Gson;
@@ -14,17 +30,38 @@ import com.rw.legion.columncheck.ColumnChecker;
 import com.rw.legion.columncheck.StringChecker;
 import com.rw.legion.columntransform.ColumnTransformer;
 
+/**
+ * Handles deserializing Legion Objectives from JSON. Most of the work is
+ * handled by Gson, but a custom deserializer is used for
+ * <code>OutputColumn</code> in order to flexibly instantiate the proper
+ * column check and column transformation classes.
+ */
+
 public class ObjectiveDeserializer {
+    
+    /**
+     * Deserialize a JSON string into a LegionObjective.
+     * 
+     * @param json  The JSON string to be deserialized.
+     * 
+     * @return  A deserialized LegionObjective.
+     */    
     public static LegionObjective deserialize(String json) {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(OutputColumn.class,
                 new ColumnDeserializer());
         
         LegionObjective objective = builder.create().
-                fromJson(json,  LegionObjective.class);
+                fromJson(json, LegionObjective.class);
         
         return objective;
     }
+    
+    /**
+     * Custom Gson JsonDeserializer for <code>OutputColumn</code>. Allows
+     * for setting up the proper <code>ColumnTransformer</code> and
+     * <code>ColumnChecker</code> for each column.
+     */
     
     public static class ColumnDeserializer
             implements JsonDeserializer<OutputColumn> {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Republic Wireless
+ * Copyright (C) 2017 Republic Wireless
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,12 @@
 package com.rw.legion.columncheck;
 
 import com.google.gson.JsonObject;
+
+/**
+ * A column checker that validates a string is a valid integer. The optional
+ * property "intType" in the objective JSON specifies what type of integer to
+ * check it against - short, int, or long. Defaults to int.
+ */
 
 public class IntegerChecker implements ColumnChecker {
     private int safeLength;

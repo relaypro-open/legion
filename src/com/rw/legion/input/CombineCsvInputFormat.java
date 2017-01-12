@@ -3,7 +3,7 @@
  * Hadoop project (http://hadoop.apache.org/) and released under the Apache
  * License, Version 2.0.
  * 
- * Copyright (C) 2016 Republic Wireless
+ * Copyright (C) 2017 Republic Wireless
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,10 @@
  * limitations under the License.
  */
 
-package com.rw.legion;
+package com.rw.legion.input;
 
 import java.io.IOException;
+
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
@@ -29,14 +30,16 @@ import org.apache.hadoop.mapreduce.lib.input.*;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.fs.Path;
 
+import com.rw.legion.LegionRecord;
+
 /**
  * Input format that is a <code>CombineFileInputFormat</code>-equivalent for
- * <code>JsonInputFormat</code>.
+ * <code>CsvInputFormat</code>.
  * 
- * @see JsonInputFormat
+ * @see CsvInputFormat
  */
 
-public class CombineJsonInputFormat
+public class CombineCsvInputFormat
         extends CombineFileInputFormat<NullWritable, LegionRecord> {
     
     public RecordReader<NullWritable, LegionRecord> createRecordReader(
@@ -68,7 +71,7 @@ public class CombineJsonInputFormat
                 TaskAttemptContext context, Integer idx)
                 throws IOException, InterruptedException {
             
-            super(new JsonInputFormat(), split, context, idx);
+            super(new CsvInputFormat(), split, context, idx);
         }
     }
 }

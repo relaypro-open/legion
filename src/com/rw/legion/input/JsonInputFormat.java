@@ -3,7 +3,7 @@
  * Hadoop project (http://hadoop.apache.org/) and released under the Apache
  * License, Version 2.0.
  * 
- * Copyright (C) 2016 Republic Wireless
+ * Copyright (C) 2017 Republic Wireless
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,11 @@
  * limitations under the License.
  */
 
-package com.rw.legion;
+package com.rw.legion.input;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -29,19 +30,26 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
+import org.apache.hadoop.io.compress.SplittableCompressionCodec;
 
 import com.google.common.base.Charsets;
+import com.rw.legion.LegionObjective;
+import com.rw.legion.LegionRecord;
+import com.rw.legion.ObjectiveDeserializer;
 
 /** 
- * An <code>InputFormat</code> for <code>CsvRecordReader</code>. Essentially,
+ * An <code>InputFormat</code> for <code>JsonRecordReader</code>. Essentially,
  * the default Hadoop <code>TextInputFormat</code> modified to use the
- * <code>CsvRecordReader</code>.
+ * <code>JsonRecordReader</code>.
  */
 
 @InterfaceAudience.Public
 @InterfaceStability.Stable
-public class CsvInputFormat
+public class JsonInputFormat
         extends FileInputFormat<NullWritable, LegionRecord> {
+    private LegionObjective legionObjective;
 
     @Override
     public RecordReader<NullWritable, LegionRecord>
@@ -55,16 +63,28 @@ public class CsvInputFormat
         if (null != delimiter)
             recordDelimiterBytes = delimiter.getBytes(Charsets.UTF_8);
         
-        return new CsvRecordReader(recordDelimiterBytes);
+        return new JsonRecordReader(recordDelimiterBytes);
     }
 
     @Override
     protected boolean isSplitable(JobContext context, Path file) {
-        /*
-         * Legion doesn't currently support splitting CSVs, because the header
-         * would only be in the first split. A fix can be investigated for a
-         * future release, though.
-         */
-        return false;
+            CompressionCodec codec;
+        Configuration job = context.getConfiguration();
+        legionObjective =
+                ObjectiveDeserializer.deserialize(job.get("legion_objective"));
+        
+        if (legionObjective.getCodecOverride() != null) {
+            codec = new CompressionCodecFactory(context.getConfiguration())
+                .getCodecByClassName(legionObjective.getCodecOverride());
+        } else {
+            codec = new CompressionCodecFactory(context.getConfiguration())
+                .getCodec(file);
+        }
+
+        if (null == codec) {
+            return true;
+        }
+        
+        return codec instanceof SplittableCompressionCodec;
     }
 }

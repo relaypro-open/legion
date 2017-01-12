@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Republic Wireless
+ * Copyright (C) 2017 Republic Wireless
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,7 +140,7 @@ public class DefaultMapper
         
         for (OutputColumn column : outputTable.getColumns()) {
             if (column.validates(keyList[i], value)) {
-                column.transform(value);
+                column.transform(keyList[i], value);
                 
                 dataToWrite[i]
                     = StringEscapeUtils.escapeCsv(value.getData(keyList[i]));

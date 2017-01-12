@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Republic Wireless
+ * Copyright (C) 2017 Republic Wireless
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,13 @@
  */
 
 package com.rw.legion.columntransform;
+
+/**
+ * Defines an interface for Legion "column transformers." A column transformer
+ * accepts a string, transforms it in some fashion, and returns another string.
+ * For example, it could accept a string containing a formatted float, round it,
+ * and return a string containing a formatted integer.
+ */
 
 public interface ColumnTransformer {
     public String transform(String str);

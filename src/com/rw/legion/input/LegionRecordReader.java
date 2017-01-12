@@ -3,7 +3,7 @@
  * Hadoop project (http://hadoop.apache.org/) and released under the Apache
  * License, Version 2.0.
  * 
- * Copyright (C) 2016 Republic Wireless
+ * Copyright (C) 2017 Republic Wireless
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-package com.rw.legion;
+package com.rw.legion.input;
 
 import java.io.IOException;
 
@@ -43,6 +43,10 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
+
+import com.rw.legion.LegionObjective;
+import com.rw.legion.LegionRecord;
+import com.rw.legion.ObjectiveDeserializer;
 
 /**
  * Abstract <code>RecordReader</code> that produces <code>NullWritable</code>

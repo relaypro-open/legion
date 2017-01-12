@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Republic Wireless
+ * Copyright (C) 2017 Republic Wireless
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,12 @@
  */
 
 package com.rw.legion.columncheck;
+
+/**
+ * Defines an interface for Legion "column checkers." A column checker must have
+ * a "validates" method which accepts the string of data in the input and checks
+ * to make sure it is in the expected format. Should return a boolean.
+ */
 
 public interface ColumnChecker {
     public boolean validates(String str);

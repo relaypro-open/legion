@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Republic Wireless
+ * Copyright (C) 2017 Republic Wireless
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class OutputColumn {
     private String key;
     private Boolean failOnAbsent = false;
     private Boolean failOnNull = false;
-    private Boolean failOnValidation = false;
+    private Boolean failOnValidation = true;
     
     // These will get set up when initialize() is called.
     private ColumnChecker checker;
@@ -54,6 +54,15 @@ public class OutputColumn {
         
     }
     
+    /**
+     * Initial setup work for this column. Called from the custom de-serializer
+     * for GSON, so we can set up the <code>ColumnChecker</code> and the
+     * <code>ColumnTransformer</code>.
+     * 
+     * @param checker The ColumnChecker that will be used for this column.
+     * @param transformer The ColumnTransformer that will be used for this
+     *                    column.
+     */
     public void initialize(ColumnChecker checker,
             ColumnTransformer transformer) {
         this.checker = checker;
@@ -124,16 +133,9 @@ public class OutputColumn {
     }
     
     /**
-     * @param value  The <code>LegionRecord</code> in which to look for this
-     *               column's key.
-     * @return  Whether or not valid data for this column's key can be found in
-     *          the supplied <code>LegionRecord</code>.
-     */
-    public boolean validates(LegionRecord value) {
-        return validates(key, value);
-    }
-    
-    /**
+     * Check if the data in this column passes the specified validation
+     * settings.
+     * 
      * @param keyOverride  Override the key to look up in the
      *                     <code>LegionRecord</code> when evaluating this
      *                     column. Used when the column has indexes.
@@ -188,7 +190,17 @@ public class OutputColumn {
         return true;
     }
     
-    public void transform(LegionRecord value) {
+    /**
+     * Look this column up in a <code>LegionRecord</code> and apply the
+     * appropriate <code>ColumnTransformer</code>, if there is one.
+     * 
+     * @param keyOverride  Override the key to look up in the
+     *                     <code>LegionRecord</code> when transforming this
+     *                     column. Used when the column has indexes.
+     * @param value  The <code>LegionRecord</code> in which to look for this
+     *               column's key.
+     */
+    public void transform(String keyOverride, LegionRecord value) {
         if (transformer != null) {
             value.setField(key, transformer.transform(value.getData(key)));
         }
