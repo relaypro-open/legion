@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Republic Wireless
+ * Copyright (C) 2017 Republic Wireless
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.ArrayList;
 import java.util.HashMap;
+import com.rw.legion.columncheck.ColumnChecker;
+import com.rw.legion.columntransform.ColumnTransformer;
 
 /**
  * A column in a Legion <code>OutputTable</code>. The column contains a key
@@ -31,19 +33,19 @@ import java.util.HashMap;
  */
 
 public class OutputColumn {
+    // These will be automatically de-serialized by Gson.
     private String key;
-    private String dataType;
-    private String regex;
-    private Boolean allowNulls;
-    private Boolean absentAsNull;
-    private String nullSubstitute;
+    private Boolean failOnAbsent = false;
+    private Boolean failOnNull = false;
+    private Boolean failOnValidation = true;
     
-    private Pattern validationPattern;
+    // These will get set up when initialize() is called.
+    private ColumnChecker checker;
+    private ColumnTransformer transformer;
     private ArrayList<String> indexes;
     private boolean hasIndexes;
     private Pattern keyPattern;
-    private boolean initialized = false;
-    private String validationReason;
+    private String failureReason;
     
     /**
      * Empty constructor for GSON.
@@ -52,27 +54,31 @@ public class OutputColumn {
         
     }
     
-    private void initialize() {
-        if (initialized == false) {
-            // Set to default values
-            allowNulls = allowNulls == null ? true : allowNulls;
-            absentAsNull = absentAsNull == null ? true : absentAsNull;
-            regex = regex == null ? "" : regex;
-            nullSubstitute = nullSubstitute == null ? "" : nullSubstitute;
-            
-            indexes = new ArrayList<String>();
-            hasIndexes = false;
-            String keyRegex = "^\\Q" + key + "\\E$";
-            Matcher m = Pattern.compile("<.*?>").matcher(key);
-            
-            while (m.find()) {
-                hasIndexes = true;
-                indexes.add(m.group());
-                keyRegex = keyRegex.replace(m.group(), "\\E([0-9]+)\\Q");
-            }
-            
-            keyPattern = Pattern.compile(keyRegex);
+    /**
+     * Initial setup work for this column. Called from the custom de-serializer
+     * for GSON, so we can set up the <code>ColumnChecker</code> and the
+     * <code>ColumnTransformer</code>.
+     * 
+     * @param checker The ColumnChecker that will be used for this column.
+     * @param transformer The ColumnTransformer that will be used for this
+     *                    column.
+     */
+    public void initialize(ColumnChecker checker,
+            ColumnTransformer transformer) {
+        this.checker = checker;
+        this.transformer = transformer;
+        indexes = new ArrayList<String>();
+        hasIndexes = false;
+        String keyRegex = "^\\Q" + key + "\\E$";
+        Matcher m = Pattern.compile("<.*?>").matcher(key);
+        
+        while (m.find()) {
+            hasIndexes = true;
+            indexes.add(m.group());
+            keyRegex = keyRegex.replace(m.group(), "\\E([0-9]+)\\Q");
         }
+        
+        keyPattern = Pattern.compile(keyRegex);
     }
     
     /**
@@ -93,8 +99,6 @@ public class OutputColumn {
      *          <code>LegionRecord</code> and place in this column.
      */
     public String getKey(HashMap<String, String> indexValues) {
-        initialize();
-        
         String tempKey = key;
         
         for (HashMap.Entry<String, String> entry : indexValues.entrySet()) {
@@ -111,8 +115,6 @@ public class OutputColumn {
      *          combinations of index values present in a file.
      */
     public Pattern getKeyPattern() {
-        initialize();
-        
         return keyPattern;
     }
     
@@ -120,8 +122,6 @@ public class OutputColumn {
      * @return  A list of all indexes used in this column key.
      */
     public ArrayList<String> getIndexes() {
-        initialize();
-        
         return indexes;
     }
     
@@ -129,22 +129,13 @@ public class OutputColumn {
      * @return  Whether this column key uses indexes.
      */
     public boolean hasIndexes() {
-        initialize();
-        
         return hasIndexes;
     }
     
     /**
-     * @param value  The <code>LegionRecord</code> in which to look for this
-     *               column's key.
-     * @return  Whether or not valid data for this column's key can be found in
-     *          the supplied <code>LegionRecord</code>.
-     */
-    public boolean validates(LegionRecord value) {
-        return validates(key, value);
-    }
-    
-    /**
+     * Check if the data in this column passes the specified validation
+     * settings.
+     * 
      * @param keyOverride  Override the key to look up in the
      *                     <code>LegionRecord</code> when evaluating this
      *                     column. Used when the column has indexes.
@@ -154,56 +145,45 @@ public class OutputColumn {
      *          the supplied <code>LegionRecord</code>.
      */
     public boolean validates(String keyOverride, LegionRecord value) {
-        initialize();
-        validationReason = null;
+        failureReason = null;
 	
-        // If the key is absent, either fail or set it to blank
+        /*
+         *  If the key is absent, either fail the record or set it to null
+         *  (blank).
+         */
         if (value.getData(keyOverride) == null) {
-            if (absentAsNull) {
-                value.setField(keyOverride, "");
-            } else {
-                validationReason = "key absent";
+            if (failOnAbsent) {
+                failureReason = "key absent";
                 return false;
+            } else {
+                value.setField(keyOverride, "");
             }
         }
         
-        // If the value is blank, fail, replace it with something, or do nothing
+        // If the value is null (blank), either fail the record or do nothing.
         if (value.getData(keyOverride).equals("")) {
-            if (allowNulls == false) {
-                validationReason = "value blank";
+            if (failOnNull) {
+                failureReason = "null not allowed";
                 return false;
-            } else if (!nullSubstitute.equals("")) {
-                value.setField(keyOverride, nullSubstitute);
             }
         }
         
         /*
-         * Unless this is a blank value and blanks are allowed, evaluate the
-         * data to see if it matches the validation pattern for this column.
+         * Unless this is a null (blank) value, validate the data using the
+         * <code>ColumnCheck</code> for this column.
          */
-        if ((value.getData(keyOverride).equals("") && allowNulls) == false) {
-            if (validationPattern == null) {
-                if (regex.equals("")) {
-                    if (dataType.equals("String")) {
-                        regex = ".*";
-                    } else if (dataType.equals("Int")) {
-                        regex = "^-?\\d+$";
-                    } else if (dataType.equals("Float")) {
-                        regex = "^-?\\d*\\.?\\d+$";
-                    } else if (dataType.equals("Scientific")) {
-                        regex = "^-?\\d*\\.?\\d+([eE][-+]?\\d+)?$";
-                    } else if (dataType.equals("Boolean")) {
-                        regex = "^0|1|True|False|true|false|T|F|t|f$";
-                    }
+        if (! value.getData(keyOverride).equals("")) {
+            if (! checker.validates(value.getData(keyOverride))) {
+                /*
+                 * Fail the record if necessary (including if failOnNull is
+                 * true, because then we can't replace with null.
+                 */
+                if (failOnValidation || failOnNull) {
+                    failureReason = "data validation failed";
+                    return false;
+                } else {
+                    value.setField(keyOverride,  "");
                 }
-                
-                validationPattern = Pattern.compile(regex);
-            }
-            
-            if (validationPattern.matcher(value.getData(keyOverride))
-                    .matches() == false) {
-                validationReason = "regex";
-                return false;
             }
         }
         
@@ -211,10 +191,26 @@ public class OutputColumn {
     }
     
     /**
+     * Look this column up in a <code>LegionRecord</code> and apply the
+     * appropriate <code>ColumnTransformer</code>, if there is one.
+     * 
+     * @param keyOverride  Override the key to look up in the
+     *                     <code>LegionRecord</code> when transforming this
+     *                     column. Used when the column has indexes.
+     * @param value  The <code>LegionRecord</code> in which to look for this
+     *               column's key.
+     */
+    public void transform(String keyOverride, LegionRecord value) {
+        if (transformer != null) {
+            value.setField(key, transformer.transform(value.getData(key)));
+        }
+    }
+    
+    /**
      * @return  The reason the most recently validated value failed validation,
      *          or null if it passed validation.
      */
-    public String getValidationReason() {
-        return validationReason;
+    public String getFailureReason() {
+        return failureReason;
     }
 }

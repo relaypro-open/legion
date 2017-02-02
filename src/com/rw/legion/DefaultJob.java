@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Republic Wireless
+ * Copyright (C) 2017 Republic Wireless
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,8 @@ import java.io.*;
 import java.net.URI;
 
 import org.apache.hadoop.io.compress.*;
+
+import com.google.gson.JsonParseException;
 
 /**
 * Default Legion job which can be used to run Legion without any custom code.
@@ -74,7 +76,8 @@ public class DefaultJob {
         conf.setStrings("legion_objective", json);
         
         // De-serialize the objective so we can access the settings here.
-        LegionObjective legionObjective = new LegionObjective(json);
+        LegionObjective legionObjective =
+                ObjectiveDeserializer.deserialize(json);
         
         // Start configuring the MapReduce job.
         Job hadoopJob = Job.getInstance(conf, "Legion");
@@ -89,26 +92,26 @@ public class DefaultJob {
         TextOutputFormat.setOutputCompressorClass(hadoopJob, GzipCodec.class);
         
         // What input format do we use?
-        Class<? extends FileInputFormat<NullWritable, LegionRecord>> inputClass;
-        
-        if (legionObjective.getCombineFiles()) {
-            if (legionObjective.getInputDataType().equals("CSV")) {
-                inputClass = CombineCsvInputFormat.class;
-            } else {
-                inputClass = CombineJsonInputFormat.class;
-            }
+
+        try {
+            @SuppressWarnings("unchecked")
+            Class<? extends FileInputFormat<NullWritable, LegionRecord>>
+                inputClass =
+                (Class<? extends FileInputFormat<NullWritable, LegionRecord>>)
+                Class.forName(legionObjective.getInputFormat());
             
+            hadoopJob.setInputFormatClass(inputClass);
+        } catch (Exception e) {
+            throw new JsonParseException("Problem loading input format " +
+                    "class '" + legionObjective.getInputFormat() + "'");
+        }
+        
+        // Should we set a max combined size?
+        
+        if (legionObjective.getMaxCombinedSize() != null) {
             CombineFileInputFormat.setMaxInputSplitSize(hadoopJob,
                     legionObjective.getMaxCombinedSize());
-        } else {
-            if (legionObjective.getInputDataType().equals("CSV")) {
-                inputClass = CsvInputFormat.class;
-            } else {
-                inputClass = JsonInputFormat.class;
-            }
         }
-       
-        hadoopJob.setInputFormatClass(inputClass);
     
         /* 
          * These are just static convenience methods, so it doesn't matter if

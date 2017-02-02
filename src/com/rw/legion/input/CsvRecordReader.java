@@ -3,7 +3,7 @@
  * Hadoop project (http://hadoop.apache.org/) and released under the Apache
  * License, Version 2.0.
  * 
- * Copyright (C) 2016 Republic Wireless
+ * Copyright (C) 2017 Republic Wireless
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@
  * limitations under the License.
  */
 
-package com.rw.legion;
+package com.rw.legion.input;
+
+import com.rw.legion.LegionRecord;
 
 /**
  * Produces <code>NullWritable</code> keys and <code>LegionRecord</code> values.

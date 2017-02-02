@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Republic Wireless
+ * Copyright (C) 2017 Republic Wireless
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,8 @@ public class DefaultMapper
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setup(Context context) {
         Configuration config = context.getConfiguration();
-        this.objective = new LegionObjective(config.get("legion_objective"));
+        this.objective =ObjectiveDeserializer.deserialize(
+                config.get("legion_objective"));
         outputWriters = new MultipleOutputs(context);
     }
     
@@ -132,7 +133,6 @@ public class DefaultMapper
      */
     private void tryOutput(OutputTable outputTable, LegionRecord value,
             String[] keyList) throws IOException, InterruptedException {
-        
         int i = 0;
         boolean validates = true;
         
@@ -140,6 +140,8 @@ public class DefaultMapper
         
         for (OutputColumn column : outputTable.getColumns()) {
             if (column.validates(keyList[i], value)) {
+                column.transform(keyList[i], value);
+                
                 dataToWrite[i]
                     = StringEscapeUtils.escapeCsv(value.getData(keyList[i]));
             } else {
@@ -147,7 +149,7 @@ public class DefaultMapper
                 dataToWrite[0] = value.getData("file_name");
                 dataToWrite[1] = value.getData("file_line");
                 dataToWrite[2] = column.getKey();
-                dataToWrite[3] = column.getValidationReason();
+                dataToWrite[3] = column.getFailureReason();
                         
                 validates = false;
                 break;

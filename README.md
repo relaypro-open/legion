@@ -2,19 +2,18 @@
 
 ## Summary
 
-Legion is a Hadoop MapReduce tool that turns big, messy data sources into clean, normalized flat files ready for ingestion into relational tables in a data warehouse (e.g., Postgres COPY).
-
-In its current form, it is particularly suited to analytical data warehouses (as opposed to transactional databases) where a trivial amount of data loss is acceptable. Its current bias is towards skipping rather than fixing bad records, though additional tools to change this are in development.
+Legion is a Hadoop MapReduce tool that programmatically extracts columns or fields from large, messy data sources, cleans them, and organizes them into normalized flat files ready for ingestion into relational tables in a data warehouse (e.g., Postgres COPY).
 
 Legion currently supports:
 
 * Input data in JSON (one object per line) or CSV formats
-* One large input file or hundreds of thousands of tiny input files
-* Gracefully ignoring corrupt files rather than throwing an exception
-* Skipping or replacing corrupt data fields (e.g., character data in an integer column)
+* Combining small files to prevent performance slowdowns
+* Gracefully ignoring corrupt files rather than crashing an entire job
+* Validating data in each individual field or column
 * Splitting a single input (e.g., a JSON object with an array) into multiple, normalized outputs (e.g., a table for the objects, and another for the array elements)
 * Handling compressed data with improper file extensions
 * Re-ordering CSV columns for consistency
+* Etc.
 
 Hadoop developers may also be interested in leveraging individual Legion components (e.g., input formats) in other MapReduce jobs.
 
@@ -47,30 +46,34 @@ hadoop jar /path/to/Legion.jar com.rw.legion.DefaultJob /in /out /path/to/object
 
 A Legion objective file is a JSON document that specifies:
 
-* `inputDataType` - Currently either 'CSV' or 'JSON'.
-* `codecOverride` - The canonical class name of the Hadoop codec class to use for reading input, if you want to override default behavior. Optional.
-* `combineFiles` - Whether or not Legion should combine input files. Use `true` for small files, `false` for large files.
-* `maxCombinedSize` - Required if `combineFiles` is true. Controls `setMaxInputSplitSize()` for `CombineLegionInputFormat` (see [CombineFileInputFormat](https://hadoop.apache.org/docs/r2.6.1/api/org/apache/hadoop/mapreduce/lib/input/CombineFileInputFormat.html)).
+* `inputFormat` - `InputFormat<NullWritable, LegionRecord>` to use for reading data. Legion comes with several, but you can also load anything on your classpath.
 * `outputTables` - An array of objects specifying output tables that Legion should create.
+* `codecOverride` - Hadoop codec class to use for reading input, if you want to override default behavior. Optional.
+* `maxCombinedSize` - `maxInputSplitSize` for input formats that combine files (see [CombineFileInputFormat](https://hadoop.apache.org/docs/r2.6.1/api/org/apache/hadoop/mapreduce/lib/input/CombineFileInputFormat.html)). Optional.
 
 Each object in the `outputTables` list should specify:
 
 * `title` - The title of the table, for differentiating output files.
-* `indexes` - An array listing the names of indexes to be used for this table. Optional. (See section on indexes below.)
 * `columns` - An array of objects that specifies what columns this table should contain.
+* `indexes` - An array listing the names of indexes to be used for this table. Optional. (See section on indexes below.)
 
 Each object in the `columns` list should specify:
 
 * `key` - The key (CSV column header or modified JsonPath) used to find the data for this column in the input data.
-* `dataType` - Currently either 'String', 'Int', 'Float', 'Scientific', or 'Boolean'. Legion will not output rows containing a field that does not match its column type.
-* `regex` - For string columns, a regex that the string must match. Legion will reject rows containing fields that don't match their regexes. Optional.
-* `allowNulls` - Whether null values should be allowed in this column. Defaults to true.
-* `absentAsNull` - Whether fields that are absent from the input data (e.g., column missing from a CSV) should be treated as null values. If false, Legion will reject the row. Defaults to true.
-* `nullSubstitute` - A string to substitute for null values. Optional.
+* `failOnAbsent` - If true, entire record will be rejected if this column key does not appear. Otherwise, this column will be null. Optional. Defaults to false.
+* `failOnNull` - If true, entire record will be rejected if this column contains null. Optional. Defaults to false.
+* `failOnValidation` - If true, entire record will be rejected if this column contains data that doesn't pass validation. Otherwise, this column will be null. Optional. Defaults to true.
+* `validate` - A JSON object with validation information for this column.
+  * `class` - `ColumnChecker` to use for this column. Legion comes with several, but you can also load anything on your classpath.
+  * `options` - Any properties that should be used to instantiate the `ColumnChecker`. For example, `IntegerChecker` requires type of integer.
+* `transform` - A JSON object with transformation information for this column.
+  * `class` - `ColumnTransformer` to use for this column. Legion comes with several, but you can also load anything on your classpath.
+  * `options` - Any properties that should be used to instantiate the `ColumnTransformer`. For example, `NullReplaceTransformer` requires a string to be used for replacing nulls.
+
 
 ## JsonPaths
 
-Legion uses a modified (highly simplified) version of JsonPaths. Essentially, the root of your JSON object is `$`. You can select attributes or sub-attributes by using dots. For example, `$.name` or `$.compensation.salary`. If there's an array in the JSON object, you can access elements using square brackets. For example, `$.states[23].capital`. That's all there is to it.
+For JSON data, Legion uses a modified (highly simplified) version of JsonPaths. Essentially, the root of your JSON object is `$`. You can select attributes or sub-attributes by using dots. For example, `$.name` or `$.compensation.salary`. If there's an array in the JSON object, you can access elements using square brackets. For example, `$.states[23].capital`. That's all there is to it.
 
 ## Simple use case
 
@@ -99,7 +102,7 @@ A simple Legion objective to accomplish that would look like this:
 
 ~~~JSON
 {
-    "inputDataType": "CSV",
+    "inputFormat": "com.rw.legion.input.CsvInputFormat",
     "outputTables":
     [
         {
@@ -108,15 +111,25 @@ A simple Legion objective to accomplish that would look like this:
             [
                 {
                     "key": "last_name",
-                    "dataType": "String"
+                    "validate": {
+                        "class": "com.rw.legion.columncheck.StringChecker"
+                    }
                 },
                 {
                     "key": "first_name",
-                    "dataType": "String"
+                    "validate": {
+                        "class": "com.rw.legion.columncheck.StringChecker"
+                    }
                 },
                 {
                     "key": "salary",
-                    "dataType": "Int"
+                    "failOnValidation": false,
+                    "validate": {
+                        "class": "com.rw.legion.columncheck.IntegerChecker",
+                        "options": {
+                            "intType": "int"
+                        }
+                    }
                 }
             ]
         }
@@ -128,6 +141,7 @@ Legion will generate output that looks like this:
 
 ~~~
 jones,yolanda,50000
+smith,john,
 brown,chris,12000000
 ~~~
 
@@ -166,7 +180,7 @@ If that's all clear as mud, this example should help:
 
 ~~~JSON
 {
-    "inputDataType": "JSON",
+    "inputFormat": "com.rw.legion.input.JsonInputFormat",
     "outputTables":
     [
         {
@@ -175,19 +189,30 @@ If that's all clear as mud, this example should help:
             [
                 {
                     "key": "$.inventor_id",
-                    "dataType": "Int"
+                    "validate": {
+                        "class": "com.rw.legion.columncheck.IntegerChecker",
+                        "options": {
+                            "intType": "int"
+                        }
+                    }
                 },
                 {
                     "key": "$.first_name",
-                    "dataType": "String"
+                    "validate": {
+                        "class": "com.rw.legion.columncheck.StringChecker"
+                    }
                 },
                 {
                     "key": "$.middle_name",
-                    "dataType": "String"
+                    "validate": {
+                        "class": "com.rw.legion.columncheck.StringChecker"
+                    }
                 },
                 {
                     "key": "$.last_name",
-                    "dataType": "String"
+                    "validate": {
+                        "class": "com.rw.legion.columncheck.StringChecker"
+                    }
                 }
             ]
         },
@@ -198,15 +223,27 @@ If that's all clear as mud, this example should help:
             [
                 {
                     "key": "$.inventor_id",
-                    "dataType": "Int"
+                    "validate": {
+                        "class": "com.rw.legion.columncheck.IntegerChecker",
+                        "options": {
+                            "intType": "int"
+                        }
+                    }
                 },
                 {
                     "key": "$.patents[<patentIndex>].patent_no",
-                    "dataType": "Int"
+                    "validate": {
+                        "class": "com.rw.legion.columncheck.IntegerChecker",
+                        "options": {
+                            "intType": "int"
+                        }
+                    }
                 },
                 {
                     "key": "$.patents[<patentIndex>].title",
-                    "dataType": "String"
+                    "validate": {
+                        "class": "com.rw.legion.columncheck.StringChecker"
+                    }
                 }
             ]
         }
@@ -229,24 +266,13 @@ The second will have a prefix of "patent" and look like this:
 
 That's it! You can go as deep as you want with the indexes, and Legion should hold up!
 
-# Using legion components
-
-You can certainly use various components of Legion in your own projects. Here's a quick description of what a few key players do, but you may have just as much luck browsing the source and looking at the comments / Javadocs.
-
-* `LegionRecord` - A glorified hash map that's the basis of everything Legion does. Links data keys to the values they're associated with.
-* `LegionInputFormat` - Reads input data and produces `NullWritable` keys and `LegionRecord` values.
-* `CombineLegionInputFormat` - `CombineFileInputFormat` equivalent for `LegionInputFormat`.
-* `LegionRecordReader` - `RecordReader` for `LegionInputFormat`.
-* `LegionObjective` - Object representing a Legion Objective (see above). Contains `OutputTable`s and `OutputColumn`s.
-
 # Future development
 
 We've got all kinds of ideas for feature additions and improvements for Legion. These include:
 
-* Replace bad field data with null or a default value, rather than rejecting the whole record
-* Check data against a provided list of valid values, rather than a regex
-* Support data type conversion (e.g., scientific notation to standard float)
-* Allow CSV input files to be splittable (in the Hadoop sense of the word)
+* Additional `ColumnTransformer`s for things like converting numeric types.
+* Additional `ColumnChecker`s for things like checking a value against a list of acceptable values.
+* Allow CSV input files to be splittable (in the Hadoop sense of the word).
 * Support URL query string input data
 * Etc.
 
@@ -257,7 +283,7 @@ Please feel free to contribute if you are interested/able!
 ## License
 
 ~~~
-Copyright © 2016 Republic Wireless
+Copyright © 2017 Republic Wireless
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this software except in compliance with the License.

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Republic Wireless
+ * Copyright (C) 2017 Republic Wireless
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package com.rw.legion;
 
 import java.util.ArrayList;
-import com.google.gson.Gson;
 
 /**
  * A <code>LegionObjective</code> is a definition of a task that Legion should
@@ -31,37 +30,24 @@ import com.google.gson.Gson;
  */
 
 public class LegionObjective {
-    private ParsedJson parsedJson;
+    public String inputFormat;
+    public String codecOverride;
+    public Integer maxCombinedSize;
+    public ArrayList<OutputTable> outputTables;
     
     /**
-     * @param json  The raw JSON to de-serialize from.
+     * Constructor required by Gson.
      */
-    public LegionObjective(String json) {
-        Gson gson = new Gson();
-        parsedJson = gson.fromJson(json, ParsedJson.class);
-    }
-    
-    /**
-     * Container that objective JSON will actually de-serialize to.
-     */
-    private class ParsedJson {
-        public String inputDataType;
-        public String codecOverride;
-        public boolean combineFiles;
-        public int maxCombinedSize;
-        public ArrayList<OutputTable> outputTables;
+    public LegionObjective() {
         
-        @SuppressWarnings("unused")
-        public ParsedJson() {
-            // Empty constructor requested by GSON.
-        }
     }
     
     /**
-     * @return  Either JSON or CSV, depending on data type.
+     * @return  Returns the canonical class name of the input format to use for
+     * this job.
      */
-    public String getInputDataType() {
-        return parsedJson.inputDataType;
+    public String getInputFormat() {
+        return inputFormat;
     }
     
     /**
@@ -69,28 +55,21 @@ public class LegionObjective {
      * the Hadoop codec to use (e.g., org.apache.hadoop.io.compress.GzipCodec).
      */
     public String getCodecOverride() {
-        return parsedJson.codecOverride;
+        return codecOverride;
     }
     
     /**
      * @return  An <code>ArrayList</code> of output tables for this objective.
      */
     public ArrayList<OutputTable> getOutputTables() {
-        return parsedJson.outputTables;
-    }
-    
-    /**
-     * @return  Whether or not input files should be combined for this job.
-     */
-    public boolean getCombineFiles() {
-        return parsedJson.combineFiles;
+        return outputTables;
     }
     
     /**
      * @return  Maximum size of an input split to create by combining input
      * files with <code>CombineLegionInputFormat</code>.
      */
-    public int getMaxCombinedSize() {
-        return parsedJson.maxCombinedSize;
+    public Integer getMaxCombinedSize() {
+        return maxCombinedSize;
     }
 }
