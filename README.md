@@ -28,7 +28,7 @@ Legion was originally developed at Republic Wireless, where we've applied it to 
 
 ## The Basics
 
-Legion comes with a pre-configured job that handles all of the use cases described above. You can execute this job by calling the Hadoop `jar` command, with the Legion jar as the target jar and `com.rw.legion.DefaultJob` as the `mainClass`.
+Legion comes with a pre-configured job that handles all of the use cases described above. You can execute this job by calling the Hadoop `jar` command, with the Legion jar as the target jar and `main.java.com.rw.legion.DefaultJob` as the `mainClass`.
 
 The default Legion job expects three additional arguments of its own:
 
@@ -39,7 +39,7 @@ The default Legion job expects three additional arguments of its own:
 All together, you get something like this:
 
 ```
-hadoop jar /path/to/Legion.jar com.rw.legion.DefaultJob /in /out /path/to/objective.json
+hadoop jar /path/to/legion.jar main.java.com.rw.legion.DefaultJob /in /out /path/to/objective.json
 ```
 
 ## Objective files
@@ -102,7 +102,7 @@ A simple Legion objective to accomplish that would look like this:
 
 ~~~JSON
 {
-    "inputFormat": "com.rw.legion.input.CsvInputFormat",
+    "inputFormat": "main.java.com.rw.legion.input.CsvInputFormat",
     "outputTables":
     [
         {
@@ -112,20 +112,20 @@ A simple Legion objective to accomplish that would look like this:
                 {
                     "key": "last_name",
                     "validate": {
-                        "class": "com.rw.legion.columncheck.StringChecker"
+                        "class": "main.java.com.rw.legion.columncheck.StringChecker"
                     }
                 },
                 {
                     "key": "first_name",
                     "validate": {
-                        "class": "com.rw.legion.columncheck.StringChecker"
+                        "class": "main.java.com.rw.legion.columncheck.StringChecker"
                     }
                 },
                 {
                     "key": "salary",
                     "failOnValidation": false,
                     "validate": {
-                        "class": "com.rw.legion.columncheck.IntegerChecker",
+                        "class": "main.java.com.rw.legion.columncheck.IntegerChecker",
                         "options": {
                             "intType": "int"
                         }
@@ -180,7 +180,7 @@ If that's all clear as mud, this example should help:
 
 ~~~JSON
 {
-    "inputFormat": "com.rw.legion.input.JsonInputFormat",
+    "inputFormat": "main.java.com.rw.legion.input.JsonInputFormat",
     "outputTables":
     [
         {
@@ -190,7 +190,7 @@ If that's all clear as mud, this example should help:
                 {
                     "key": "$.inventor_id",
                     "validate": {
-                        "class": "com.rw.legion.columncheck.IntegerChecker",
+                        "class": "main.java.com.rw.legion.columncheck.IntegerChecker",
                         "options": {
                             "intType": "int"
                         }
@@ -199,19 +199,19 @@ If that's all clear as mud, this example should help:
                 {
                     "key": "$.first_name",
                     "validate": {
-                        "class": "com.rw.legion.columncheck.StringChecker"
+                        "class": "main.java.com.rw.legion.columncheck.StringChecker"
                     }
                 },
                 {
                     "key": "$.middle_name",
                     "validate": {
-                        "class": "com.rw.legion.columncheck.StringChecker"
+                        "class": "main.java.com.rw.legion.columncheck.StringChecker"
                     }
                 },
                 {
                     "key": "$.last_name",
                     "validate": {
-                        "class": "com.rw.legion.columncheck.StringChecker"
+                        "class": "main.java.com.rw.legion.columncheck.StringChecker"
                     }
                 }
             ]
@@ -224,7 +224,7 @@ If that's all clear as mud, this example should help:
                 {
                     "key": "$.inventor_id",
                     "validate": {
-                        "class": "com.rw.legion.columncheck.IntegerChecker",
+                        "class": "main.java.com.rw.legion.columncheck.IntegerChecker",
                         "options": {
                             "intType": "int"
                         }
@@ -233,7 +233,7 @@ If that's all clear as mud, this example should help:
                 {
                     "key": "$.patents[<patentIndex>].patent_no",
                     "validate": {
-                        "class": "com.rw.legion.columncheck.IntegerChecker",
+                        "class": "main.java.com.rw.legion.columncheck.IntegerChecker",
                         "options": {
                             "intType": "int"
                         }
@@ -242,7 +242,7 @@ If that's all clear as mud, this example should help:
                 {
                     "key": "$.patents[<patentIndex>].title",
                     "validate": {
-                        "class": "com.rw.legion.columncheck.StringChecker"
+                        "class": "main.java.com.rw.legion.columncheck.StringChecker"
                     }
                 }
             ]
