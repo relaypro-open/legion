@@ -18,11 +18,11 @@
  * limitations under the License.
  */
 
-package main.java.com.rw.legion.input;
+package com.rw.legion.input;
 
-import main.java.com.rw.legion.LegionObjective;
-import main.java.com.rw.legion.LegionRecord;
-import main.java.com.rw.legion.ObjectiveDeserializer;
+import com.rw.legion.LegionObjective;
+import com.rw.legion.LegionRecord;
+import com.rw.legion.ObjectiveDeserializer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.classification.InterfaceAudience;

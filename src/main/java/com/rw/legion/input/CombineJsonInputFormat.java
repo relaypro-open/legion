@@ -18,9 +18,9 @@
  * limitations under the License.
  */
 
-package main.java.com.rw.legion.input;
+package com.rw.legion.input;
 
-import main.java.com.rw.legion.LegionRecord;
+import com.rw.legion.LegionRecord;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputSplit;

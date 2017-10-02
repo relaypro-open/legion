@@ -18,9 +18,9 @@
  * limitations under the License.
  */
 
-package main.java.com.rw.legion.input;
+package com.rw.legion.input;
 
-import main.java.com.rw.legion.LegionRecord;
+import com.rw.legion.LegionRecord;
 
 /**
  * Produces <code>NullWritable</code> keys and <code>LegionRecord</code> values.
