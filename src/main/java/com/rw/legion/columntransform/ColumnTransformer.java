@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package main.java.com.rw.legion.columntransform;
+package com.rw.legion.columntransform;
 
 /**
  * Defines an interface for Legion "column transformers." A column transformer

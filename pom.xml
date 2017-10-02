@@ -10,7 +10,8 @@
     <description>Hadoop MapReduce tools for cleaning and re-organizing data that will be ingested into relational databases.</description>
 
     <build>
-        <sourceDirectory>src</sourceDirectory>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <testSourceDirectory>src/test/java</testSourceDirectory>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>

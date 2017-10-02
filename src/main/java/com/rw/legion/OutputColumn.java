@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package main.java.com.rw.legion;
+package com.rw.legion;
 
-import main.java.com.rw.legion.columncheck.ColumnChecker;
-import main.java.com.rw.legion.columntransform.ColumnTransformer;
+import com.rw.legion.columncheck.ColumnChecker;
+import com.rw.legion.columntransform.ColumnTransformer;
 
 import java.util.ArrayList;
 import java.util.HashMap;

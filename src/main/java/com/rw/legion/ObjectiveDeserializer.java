@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package main.java.com.rw.legion;
+package com.rw.legion;
 
 import com.google.gson.*;
-import main.java.com.rw.legion.columncheck.ColumnChecker;
-import main.java.com.rw.legion.columncheck.StringChecker;
-import main.java.com.rw.legion.columntransform.ColumnTransformer;
+import com.rw.legion.columncheck.ColumnChecker;
+import com.rw.legion.columncheck.StringChecker;
+import com.rw.legion.columntransform.ColumnTransformer;
 
 import java.lang.reflect.Type;
 

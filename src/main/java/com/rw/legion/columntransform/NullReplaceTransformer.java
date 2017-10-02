@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package main.java.com.rw.legion.columntransform;
+package com.rw.legion.columntransform;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;

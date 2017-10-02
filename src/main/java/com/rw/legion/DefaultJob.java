@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package main.java.com.rw.legion;
+package com.rw.legion;
 
 import com.google.gson.JsonParseException;
 import org.apache.hadoop.conf.*;

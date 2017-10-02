@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package main.java.com.rw.legion.columncheck;
+package com.rw.legion.columncheck;
 
 /**
  * Defines an interface for Legion "column checkers." A column checker must have

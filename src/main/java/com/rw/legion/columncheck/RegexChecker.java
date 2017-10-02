@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package main.java.com.rw.legion.columncheck;
+package com.rw.legion.columncheck;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
