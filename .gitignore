@@ -14,4 +14,6 @@
 # Maven
 log/
 target/
+src/META-INF/
+classes/
 
