@@ -87,11 +87,6 @@ class FloatCheckerTest {
 
     @Test
     void validatesUnspecifiedType() {
-//        assertEquals(true, fcUnspecified.validates(maxDouble), "Max Double Value");
-//        assertEquals(true, fcUnspecified.validates(minDouble), "Min Double Value");
-//        assertEquals(false, fcUnspecified.validates(tooBigDouble), "Exceeds Max Double Value");
-//        assertEquals(false, fcUnspecified.validates(tooSmallDouble), "Exceeds Min Double Value");
-//        assertEquals(false, fcUnspecified.validates(notNumber), "Not a Number");
         assertEquals(floatTypeDouble, fcUnspecified.getFloatType());
     }
 
