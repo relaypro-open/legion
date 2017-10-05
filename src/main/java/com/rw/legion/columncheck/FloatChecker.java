@@ -61,4 +61,8 @@ public class FloatChecker implements ColumnChecker {
             return false;
         }
     }
+
+    public String getFloatType() {
+        return floatType;
+    }
 }
