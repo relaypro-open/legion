@@ -9,6 +9,11 @@
     <name>Legion</name>
     <description>Hadoop MapReduce tools for cleaning and re-organizing data that will be ingested into relational databases.</description>
 
+    <properties>
+        <!-- Test dependencies -->
+        <junit.version>5.0.0</junit.version>
+    </properties>
+
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <testSourceDirectory>src/test/java</testSourceDirectory>
@@ -61,6 +66,13 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
             <version>2.7.1</version>
+        </dependency>
+
+        <!-- Test -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.version}</version>
         </dependency>
     </dependencies>
 </project>
