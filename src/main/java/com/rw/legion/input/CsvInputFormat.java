@@ -20,6 +20,8 @@
 
 package com.rw.legion.input;
 
+import com.google.common.base.Charsets;
+import com.rw.legion.LegionRecord;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.fs.Path;
@@ -29,9 +31,6 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-
-import com.google.common.base.Charsets;
-import com.rw.legion.LegionRecord;
 
 /** 
  * An <code>InputFormat</code> for <code>CsvRecordReader</code>. Essentially,

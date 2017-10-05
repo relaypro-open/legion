@@ -20,24 +20,23 @@
 
 package com.rw.legion.input;
 
+import com.google.common.base.Charsets;
+import com.rw.legion.LegionObjective;
+import com.rw.legion.LegionRecord;
+import com.rw.legion.ObjectiveDeserializer;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
+import org.apache.hadoop.io.compress.SplittableCompressionCodec;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.io.compress.CompressionCodec;
-import org.apache.hadoop.io.compress.CompressionCodecFactory;
-import org.apache.hadoop.io.compress.SplittableCompressionCodec;
-
-import com.google.common.base.Charsets;
-import com.rw.legion.LegionObjective;
-import com.rw.legion.LegionRecord;
-import com.rw.legion.ObjectiveDeserializer;
 
 /** 
  * An <code>InputFormat</code> for <code>JsonRecordReader</code>. Essentially,

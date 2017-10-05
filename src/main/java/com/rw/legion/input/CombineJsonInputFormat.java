@@ -20,26 +20,25 @@
 
 package com.rw.legion.input;
 
-import java.io.IOException;
-
+import com.rw.legion.LegionRecord;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
+import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.*;
-import org.apache.hadoop.mapreduce.JobContext;
-import org.apache.hadoop.fs.Path;
 
-import com.rw.legion.LegionRecord;
+import java.io.IOException;
 
 /**
  * Input format that is a <code>CombineFileInputFormat</code>-equivalent for
- * <code>CsvInputFormat</code>.
+ * <code>JsonInputFormat</code>.
  * 
- * @see CsvInputFormat
+ * @see JsonInputFormat
  */
 
-public class CombineCsvInputFormat
+public class CombineJsonInputFormat
         extends CombineFileInputFormat<NullWritable, LegionRecord> {
     
     public RecordReader<NullWritable, LegionRecord> createRecordReader(
@@ -71,7 +70,7 @@ public class CombineCsvInputFormat
                 TaskAttemptContext context, Integer idx)
                 throws IOException, InterruptedException {
             
-            super(new CsvInputFormat(), split, context, idx);
+            super(new JsonInputFormat(), split, context, idx);
         }
     }
 }

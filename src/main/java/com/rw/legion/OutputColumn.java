@@ -16,12 +16,13 @@
 
 package com.rw.legion;
 
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import java.util.ArrayList;
-import java.util.HashMap;
 import com.rw.legion.columncheck.ColumnChecker;
 import com.rw.legion.columntransform.ColumnTransformer;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A column in a Legion <code>OutputTable</code>. The column contains a key

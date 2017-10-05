@@ -16,9 +16,10 @@
 
 package com.rw.legion.columncheck;
 
-import java.util.regex.Pattern;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+
+import java.util.regex.Pattern;
 
 /**
  * A column checker that validates a string matches a given regex. Requires a

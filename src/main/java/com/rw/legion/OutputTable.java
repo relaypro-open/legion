@@ -15,6 +15,7 @@
  */
 
 package com.rw.legion;
+
 import java.util.ArrayList;
 
 /**

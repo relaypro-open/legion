@@ -39,7 +39,7 @@ The default Legion job expects three additional arguments of its own:
 All together, you get something like this:
 
 ```
-hadoop jar /path/to/Legion.jar com.rw.legion.DefaultJob /in /out /path/to/objective.json
+hadoop jar /path/to/legion.jar com.rw.legion.DefaultJob /in /out /path/to/objective.json
 ```
 
 ## Objective files

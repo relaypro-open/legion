@@ -16,15 +16,15 @@
 
 package com.rw.legion;
 
-import java.io.IOException;
-
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
+
+import java.io.IOException;
 
 /**
  * Default Mapper class used by Legion. Takes a <code>NullWritable</code> key
@@ -50,7 +50,7 @@ public class DefaultMapper
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setup(Context context) {
         Configuration config = context.getConfiguration();
-        this.objective =ObjectiveDeserializer.deserialize(
+        this.objective = ObjectiveDeserializer.deserialize(
                 config.get("legion_objective"));
         outputWriters = new MultipleOutputs(context);
     }
@@ -132,7 +132,7 @@ public class DefaultMapper
      *                 LegionRecord</code>.
      */
     private void tryOutput(OutputTable outputTable, LegionRecord value,
-            String[] keyList) throws IOException, InterruptedException {
+                           String[] keyList) throws IOException, InterruptedException {
         int i = 0;
         boolean validates = true;
         

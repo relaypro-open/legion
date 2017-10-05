@@ -16,13 +16,15 @@
 
 package com.rw.legion;
 
+import org.apache.hadoop.io.*;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.io.*;
-
-import org.apache.hadoop.io.*;
 
 /**
  * At its core, this is nothing more than a hash map, which links data keys

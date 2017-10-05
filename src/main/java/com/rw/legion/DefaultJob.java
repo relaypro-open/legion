@@ -15,25 +15,24 @@
  */
 
 package com.rw.legion;
-        
-import org.apache.hadoop.fs.Path;
+
+import com.google.gson.JsonParseException;
 import org.apache.hadoop.conf.*;
+import org.apache.hadoop.fs.*;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.*;
+import org.apache.hadoop.io.compress.*;
 import org.apache.hadoop.mapreduce.*;
 import org.apache.hadoop.mapreduce.lib.input.CombineFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.LazyOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
-import org.apache.hadoop.fs.*;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.URI;
-
-import org.apache.hadoop.io.compress.*;
-
-import com.google.gson.JsonParseException;
 
 /**
 * Default Legion job which can be used to run Legion without any custom code.

@@ -16,19 +16,12 @@
 
 package com.rw.legion;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonObject;
-
-import java.lang.reflect.Type;
-
+import com.google.gson.*;
 import com.rw.legion.columncheck.ColumnChecker;
 import com.rw.legion.columncheck.StringChecker;
 import com.rw.legion.columntransform.ColumnTransformer;
+
+import java.lang.reflect.Type;
 
 /**
  * Handles deserializing Legion Objectives from JSON. Most of the work is
@@ -68,7 +61,7 @@ public class ObjectiveDeserializer {
         
         @Override
         public OutputColumn deserialize(JsonElement json, Type typeOfT,
-                JsonDeserializationContext ctx) throws JsonParseException {
+                                        JsonDeserializationContext ctx) throws JsonParseException {
             
             // Default de-serializer will cover everything but column checker.
             OutputColumn column = new Gson().fromJson(json, OutputColumn.class);

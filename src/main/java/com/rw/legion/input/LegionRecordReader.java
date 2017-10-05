@@ -20,9 +20,11 @@
 
 package com.rw.legion.input;
 
-import java.io.IOException;
-
-import org.apache.hadoop.mapreduce.lib.input.*;
+import com.rw.legion.LegionObjective;
+import com.rw.legion.LegionRecord;
+import com.rw.legion.ObjectiveDeserializer;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
@@ -32,21 +34,13 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.Seekable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.compress.CodecPool;
-import org.apache.hadoop.io.compress.CompressionCodec;
-import org.apache.hadoop.io.compress.SplitCompressionInputStream;
-import org.apache.hadoop.io.compress.SplittableCompressionCodec;
-import org.apache.hadoop.io.compress.CompressionCodecFactory;
-import org.apache.hadoop.io.compress.Decompressor;
+import org.apache.hadoop.io.compress.*;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.Log;
+import org.apache.hadoop.mapreduce.lib.input.*;
 
-import com.rw.legion.LegionObjective;
-import com.rw.legion.LegionRecord;
-import com.rw.legion.ObjectiveDeserializer;
+import java.io.IOException;
 
 /**
  * Abstract <code>RecordReader</code> that produces <code>NullWritable</code>

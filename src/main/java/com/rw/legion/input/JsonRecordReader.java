@@ -20,15 +20,14 @@
 
 package com.rw.legion.input;
 
-import java.util.Map;
-
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.JsonParser;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonReader;
 import com.rw.legion.LegionRecord;
 
 import java.io.StringReader;
+import java.util.Map;
 
 /**
  * Produces <code>NullWritable</code> keys and <code>LegionRecord</code> values.
