@@ -39,7 +39,7 @@ public class NullReplaceTransformer implements ColumnTransformer {
     }
     
     public String transform(String str) {
-        if (str.equals("")) return replacement;
+        if (str == null || str.equals("")) return replacement;
         return str;
     }
 }
