@@ -5,6 +5,9 @@ jdk:
 
 install: true
 
+scripts:
+  - mvn cobertura:cobertura
+
 cache:
   directories:
     - $HOME/.m2
