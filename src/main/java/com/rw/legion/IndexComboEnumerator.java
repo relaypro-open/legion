@@ -58,4 +58,8 @@ public class IndexComboEnumerator implements Iterable<IndexCombo> {
     public Iterator<IndexCombo> iterator() {
         return combinations.iterator();
     }
+
+    public HashSet<IndexCombo> getCombinations() {
+        return combinations;
+    }
 }
