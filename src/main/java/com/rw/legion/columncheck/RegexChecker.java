@@ -41,4 +41,9 @@ public class RegexChecker implements ColumnChecker {
     public boolean validates(String str) {
         return pattern.matcher(str).matches();
     }
+
+    public Pattern getPattern() {
+        return pattern;
+    }
+
 }
