@@ -1,5 +1,7 @@
 # Overview
 
+[![Build Status](https://travis-ci.org/republicwireless-open/legion.svg?branch=master)](https://travis-ci.org/republicwireless-open/legion)
+
 ## Summary
 
 Legion is a Hadoop MapReduce tool that programmatically extracts columns or fields from large, messy data sources, cleans them, and organizes them into normalized flat files ready for ingestion into relational tables in a data warehouse (e.g., Postgres COPY).
