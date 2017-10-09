@@ -35,7 +35,7 @@ public class IndexComboEnumerator implements Iterable<IndexCombo> {
     /**
      * Add an index combination to the list.
      * 
-     * @param index  A combination of index keys/values to be added to the list.
+     * @param indexCombo  A combination of index keys/values to be added to the list.
      */
     public void addCombo(IndexCombo indexCombo) {
         combinations.add(indexCombo);
@@ -57,5 +57,9 @@ public class IndexComboEnumerator implements Iterable<IndexCombo> {
      */
     public Iterator<IndexCombo> iterator() {
         return combinations.iterator();
+    }
+
+    public HashSet<IndexCombo> getCombinations() {
+        return combinations;
     }
 }
