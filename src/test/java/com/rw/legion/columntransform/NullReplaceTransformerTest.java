@@ -45,4 +45,9 @@ class NullReplaceTransformerTest {
         assertEquals(mystring, npt.transform(mystring));
     }
 
+    @Test
+    void fail() {
+        assertEquals(false, true);
+    }
+
 }
