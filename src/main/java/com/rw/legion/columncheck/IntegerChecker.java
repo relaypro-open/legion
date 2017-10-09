@@ -85,4 +85,12 @@ public class IntegerChecker implements ColumnChecker {
         
         return true;
     }
+
+    public String getIntType() {
+        return intType;
+    }
+
+    public int getSafeLength() {
+        return safeLength;
+    }
 }
