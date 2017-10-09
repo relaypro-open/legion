@@ -5,9 +5,9 @@ jdk:
 
 # install: true
 
-# cache:
-#   directories:
-#     - $HOME/.m2
+cache:
+  directories:
+  - "$HOME/.cache"
 
 script:
   - mvn -X
