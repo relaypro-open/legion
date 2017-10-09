@@ -5,6 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.rw.legion</groupId>
     <artifactId>legion</artifactId>
+    <packaging>jar</packaging>
     <version>0.0.1</version>
     <name>Legion</name>
     <description>Hadoop MapReduce tools for cleaning and re-organizing data that will be ingested into relational databases.</description>
@@ -12,7 +13,9 @@
     <properties>
         <!-- Java Build Version -->
         <java.version>1.8</java.version>
+        <maven.jar.version>3.0.2</maven.jar.version>
         <!-- Test dependencies -->
+        <junit.platform.version>1.0.1</junit.platform.version>
         <junit.version>5.0.0</junit.version>
     </properties>
 
@@ -29,6 +32,36 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.19.1</version>
+                <configuration>
+                    <includes>
+                        <include>**/Test*.java</include>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                        <include>**/*TestCase.java</include>
+                    </includes>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.junit.jupiter</groupId>
+                        <artifactId>junit-jupiter-api</artifactId>
+                        <version>${junit.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.junit.platform</groupId>
+                        <artifactId>junit-platform-surefire-provider</artifactId>
+                        <version>1.0.0-RC3</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.junit.jupiter</groupId>
+                        <artifactId>junit-jupiter-engine</artifactId>
+                        <version>5.0.0-RC3</version>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
