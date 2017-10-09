@@ -3,17 +3,11 @@ jdk:
   - oraclejdk8
   - openjdk8
 
-# install: true
+ install: true
 
 cache:
   directories:
   - "$HOME/.cache"
-
-script:
-  - mvn install -Dmaven.javadoc.skip=true -B -V
-  - mvn clean verify
-  - mvn -X
-  - mvn test -B
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
