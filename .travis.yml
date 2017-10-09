@@ -10,6 +10,7 @@ cache:
   - "$HOME/.cache"
 
 script:
+  - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
   - mvn -X
   - mvn test -B
 
