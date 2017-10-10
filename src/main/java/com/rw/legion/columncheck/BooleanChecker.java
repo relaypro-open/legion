@@ -18,10 +18,23 @@ package com.rw.legion.columncheck;
 
 import com.google.gson.JsonObject;
 
-public class BooleanChecker extends BoolChecker {
+/**
+ * A column checker that validates a string is a valid boolean. Acceptable
+ * formats are currently TRUE/FALSE, T/F, or 1/0 (case insensitive).
+ */
+
+public class BooleanChecker implements ColumnChecker {
 
     public BooleanChecker(JsonObject json) {
-        super(json);
+    }
+
+    public boolean validates(String str) {
+        return "TRUE".equalsIgnoreCase(str)
+                || "T".equals(str)
+                || "1".equals(str)
+                || "FALSE".equalsIgnoreCase(str)
+                || "F".equals(str)
+                || "0".equals(str);
     }
 
 }
