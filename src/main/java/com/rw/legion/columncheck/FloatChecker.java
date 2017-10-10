@@ -43,7 +43,7 @@ public class FloatChecker implements ColumnChecker {
         if (! (json.has("floatType"))) {
             floatType = "double";
         } else {
-            floatType = json.get("floatType").getAsString();
+            floatType = json.get("floatType").getAsString().toLowerCase();
             if (!floatType.equals("double") && !floatType.equals("float")) {
                 throw new InvalidFloatTypeException(floatType + " is not a valid floatType.");
             }

@@ -25,9 +25,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class FloatCheckerTest {
     private FloatChecker fcUnspecified;
+    private FloatChecker fcDoubleUpper;
     private FloatChecker fcDouble;
     private FloatChecker fcFloat;
 
+    private String floatTypeDoubleUpper = "DoUbLe";
     private String floatTypeDouble = "double";
     private String floatTypeFloat = "float";
     private String floatTypeInvalid = "foobar";
@@ -62,6 +64,7 @@ class FloatCheckerTest {
     @BeforeEach
     void setUp() throws FloatChecker.InvalidFloatTypeException {
         fcUnspecified = new FloatChecker(buildJson(null));
+        fcDoubleUpper = new FloatChecker(buildJson(floatTypeDoubleUpper));
         fcDouble = new FloatChecker(buildJson(floatTypeDouble));
         fcFloat = new FloatChecker(buildJson(floatTypeFloat));
     }
@@ -69,6 +72,11 @@ class FloatCheckerTest {
     @Test
     void throwsInvalidFloatTypeException() {
         assertThrows(FloatChecker.InvalidFloatTypeException.class, () -> new FloatChecker(buildJson(floatTypeInvalid)));
+    }
+
+    @Test
+    void validatesDoubleUpperVar() {
+        assertEquals(floatTypeDouble, fcDoubleUpper.getFloatType());
     }
 
     @Test
