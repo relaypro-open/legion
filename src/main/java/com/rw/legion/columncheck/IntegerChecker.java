@@ -27,8 +27,14 @@ import com.google.gson.JsonObject;
 public class IntegerChecker implements ColumnChecker {
     private int safeLength;
     private String intType;
+
+    public class InvalidIntTypeException extends Exception {
+        public InvalidIntTypeException(String message) {
+            super(message);
+        }
+    }
     
-    public IntegerChecker(JsonObject json) {
+    public IntegerChecker(JsonObject json) throws InvalidIntTypeException {
         if (! (json.has("intType"))) {
             intType = "int";
             safeLength = 9;
@@ -38,6 +44,9 @@ public class IntegerChecker implements ColumnChecker {
             if (intType.equals("short")) safeLength = 4;
             else if (intType.equals("int")) safeLength = 9;
             else if (intType.equals("long")) safeLength = 15;
+            else {
+                throw new InvalidIntTypeException(intType + " is not a valid Integer Type.");
+            }
         }
     }
     

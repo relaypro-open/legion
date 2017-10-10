@@ -32,6 +32,7 @@ class IntegerCheckerTest {
     private String intTypeShort = "short";
     private String intTypeInt = "int";
     private String intTypeLong = "long";
+    private String intTypeInvalid = "fooBar";
 
     private int safeLengthShort = 4;
     private int safeLengthInt = 9;
@@ -65,11 +66,16 @@ class IntegerCheckerTest {
     }
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IntegerChecker.InvalidIntTypeException {
         icUnspecified = new IntegerChecker(buildJson(null));
         icShort = new IntegerChecker(buildJson(intTypeShort));
         icInt = new IntegerChecker(buildJson(intTypeInt));
         icLong = new IntegerChecker(buildJson(intTypeLong));
+    }
+
+    @Test
+    void throwsInvalidIntTypeException() {
+        assertThrows(IntegerChecker.InvalidIntTypeException.class, () -> new IntegerChecker(buildJson(intTypeInvalid)));
     }
 
     @Test
