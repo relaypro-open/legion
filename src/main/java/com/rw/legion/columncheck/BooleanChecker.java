@@ -30,10 +30,10 @@ public class BooleanChecker implements ColumnChecker {
 
     public boolean validates(String str) {
         return "TRUE".equalsIgnoreCase(str)
-                || "T".equals(str)
+                || "T".equalsIgnoreCase(str)
                 || "1".equals(str)
                 || "FALSE".equalsIgnoreCase(str)
-                || "F".equals(str)
+                || "F".equalsIgnoreCase(str)
                 || "0".equals(str);
     }
 

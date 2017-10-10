@@ -47,8 +47,8 @@ class BooleanCheckerTest {
     void validatesLetter() {
         assertEquals(true, bc.validates("F"));
         assertEquals(true, bc.validates("T"));
-        assertEquals(false, bc.validates("f"));
-        assertEquals(false, bc.validates("t"));
+        assertEquals(true, bc.validates("f"));
+        assertEquals(true, bc.validates("t"));
     }
 
     @Test
