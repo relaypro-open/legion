@@ -43,7 +43,7 @@ public class IntegerChecker implements ColumnChecker {
             
             if (intType.equals("short")) safeLength = 4;
             else if (intType.equals("int")) safeLength = 9;
-            else if (intType.equals("long")) safeLength = 15;
+            else if (intType.equals("long")) safeLength = 18;
             else {
                 throw new InvalidIntTypeException(intType + " is not a valid Integer Type.");
             }

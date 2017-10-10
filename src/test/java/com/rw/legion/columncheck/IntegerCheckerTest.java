@@ -38,7 +38,7 @@ class IntegerCheckerTest {
 
     private int safeLengthShort = 4;
     private int safeLengthInt = 9;
-    private int safeLengthLong = 15;
+    private int safeLengthLong = 18;
 
     private String validShort = "1234";
     private String validShortNeg = "-1234";
