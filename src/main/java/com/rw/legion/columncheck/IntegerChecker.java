@@ -39,7 +39,7 @@ public class IntegerChecker implements ColumnChecker {
             intType = "int";
             safeLength = 9;
         } else {
-            intType = json.get("intType").getAsString();
+            intType = json.get("intType").getAsString().toLowerCase();
             
             if (intType.equals("short")) safeLength = 4;
             else if (intType.equals("int")) safeLength = 9;

@@ -25,10 +25,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class IntegerCheckerTest {
     private IntegerChecker icUnspecified;
+    private IntegerChecker icShortUpper;
     private IntegerChecker icShort;
     private IntegerChecker icInt;
     private IntegerChecker icLong;
 
+    private String intTypeShortUpper = "ShOrT";
     private String intTypeShort = "short";
     private String intTypeInt = "int";
     private String intTypeLong = "long";
@@ -68,6 +70,7 @@ class IntegerCheckerTest {
     @BeforeEach
     void setUp() throws IntegerChecker.InvalidIntTypeException {
         icUnspecified = new IntegerChecker(buildJson(null));
+        icShortUpper = new IntegerChecker(buildJson(intTypeShortUpper));
         icShort = new IntegerChecker(buildJson(intTypeShort));
         icInt = new IntegerChecker(buildJson(intTypeInt));
         icLong = new IntegerChecker(buildJson(intTypeLong));
@@ -76,6 +79,12 @@ class IntegerCheckerTest {
     @Test
     void throwsInvalidIntTypeException() {
         assertThrows(IntegerChecker.InvalidIntTypeException.class, () -> new IntegerChecker(buildJson(intTypeInvalid)));
+    }
+
+    @Test
+    void validatesShortUpperVars() {
+        assertEquals(intTypeShort, icShortUpper.getIntType());
+        assertEquals(safeLengthShort, icShortUpper.getSafeLength());
     }
 
     @Test
