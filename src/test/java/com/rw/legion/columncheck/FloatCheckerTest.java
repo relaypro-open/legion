@@ -34,12 +34,12 @@ class FloatCheckerTest {
     private static String maxDouble = Double.toString(Double.MAX_VALUE);  // 1.7976931348623157E308
     private static String minDouble = Double.toString(Double.MIN_VALUE);  // 4.9E-324
     private static String tooBigDouble = "1.7976931348623157E309";
-    private static String tooSmallDouble = "4.9E-325";
+    private static String nearZeroDouble = "4.9E-325";
 
     private static String maxFloat = Float.toString(Float.MAX_VALUE);  // 3.4028235E38
     private static String minFloat = Float.toString(Float.MIN_VALUE);  // 1.4E-45
     private static String tooBigFloat = "3.4028235E39";
-    private static String tooSmallFloat = "1.4E-46";
+    private static String nearZeroFloat = "1.4E-46";
 
     private static String notNumber = "FooBar";
 
@@ -71,7 +71,7 @@ class FloatCheckerTest {
         assertEquals(true, fcDouble.validates(maxDouble), "Max Double Value");
         assertEquals(true, fcDouble.validates(minDouble), "Min Double Value");
         assertEquals(false, fcDouble.validates(tooBigDouble), "Exceeds Max Double Value");
-        assertEquals(false, fcDouble.validates(tooSmallDouble), "Exceeds Min Double Value");
+        assertEquals(true, fcDouble.validates(nearZeroDouble), "Near Zero Double Value");
         assertEquals(false, fcDouble.validates(notNumber), "Not a Number");
     }
 
@@ -81,7 +81,7 @@ class FloatCheckerTest {
         assertEquals(true, fcFloat.validates(maxFloat), "Max Float Value");
         assertEquals(true, fcFloat.validates(minFloat), "Min Float Value");
         assertEquals(false, fcFloat.validates(tooBigFloat), "Exceeds Max Float Value");
-        assertEquals(false, fcFloat.validates(tooSmallFloat), "Exceeds Min Float Value");
+        assertEquals(true, fcFloat.validates(nearZeroFloat), "Near Zero Float Value");
         assertEquals(false, fcFloat.validates(notNumber), "Not a Number");
     }
 

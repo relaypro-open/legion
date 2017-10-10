@@ -40,18 +40,25 @@ public class FloatChecker implements ColumnChecker {
             floatType = json.get("floatType").getAsString();
         }
     }
+
+    /**
+     * Validate a string against its floatType. Infinite values are rejected,
+     * but zero (or near zero) value are accepted.
+     *
+     * return  boolean
+     * */
     
     public boolean validates(String str) {
         try {
             if (floatType.equals("float")) {
                 Float value = Float.parseFloat(str);
-                if (Float.MAX_VALUE < value || Float.MIN_VALUE > value) {
+                if (value.isInfinite()) {
                     throw new FloatOutOfBoundsException("Float exceeded range.");
                 }
             }
             if (floatType.equals("double")) {
                 Double value = Double.parseDouble(str);
-                if (Double.MAX_VALUE < value || Double.MIN_VALUE > value) {
+                if (value.isInfinite()) {
                     throw new FloatOutOfBoundsException("Double exceeded range.");
                 }
             }
