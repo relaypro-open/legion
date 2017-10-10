@@ -19,11 +19,22 @@ package com.rw.legion.columncheck;
 import com.google.gson.JsonObject;
 
 /**
- * Deprecated. Please use <code>BooleanChecker</code>.
+ * A column checker that validates a string is a valid boolean. Acceptable
+ * formats are currently TRUE/FALSE, T/F, or 1/0 (case insensitive).
  */
 
-public class BoolChecker extends BooleanChecker  {
-    public BoolChecker(JsonObject json) {
-        super(json);
+public class BooleanChecker implements ColumnChecker {
+
+    public BooleanChecker(JsonObject json) {
     }
+
+    public boolean validates(String str) {
+        return "TRUE".equalsIgnoreCase(str)
+                || "T".equalsIgnoreCase(str)
+                || "1".equals(str)
+                || "FALSE".equalsIgnoreCase(str)
+                || "F".equalsIgnoreCase(str)
+                || "0".equals(str);
+    }
+
 }

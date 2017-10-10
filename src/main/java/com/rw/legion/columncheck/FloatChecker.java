@@ -26,7 +26,13 @@ import com.google.gson.JsonObject;
 
 public class FloatChecker implements ColumnChecker {
     private String floatType;
-    
+
+    public class FloatOutOfBoundsException extends Exception {
+        public FloatOutOfBoundsException(String message) {
+            super(message);
+        }
+    }
+
     public FloatChecker(JsonObject json) {
         if (! (json.has("floatType"))) {
             floatType = "double";
@@ -34,15 +40,36 @@ public class FloatChecker implements ColumnChecker {
             floatType = json.get("floatType").getAsString();
         }
     }
+
+    /**
+     * Validate a string against its floatType. Infinite values are rejected,
+     * but zero (or near zero) value are accepted.
+     *
+     * return  boolean
+     * */
     
     public boolean validates(String str) {
         try {
-            if (floatType.equals("float")) Float.parseFloat(str);
-            if (floatType.equals("double")) Double.parseDouble(str);
+            if (floatType.equals("float")) {
+                Float value = Float.parseFloat(str);
+                if (value.isInfinite()) {
+                    throw new FloatOutOfBoundsException("Float exceeded range.");
+                }
+            }
+            if (floatType.equals("double")) {
+                Double value = Double.parseDouble(str);
+                if (value.isInfinite()) {
+                    throw new FloatOutOfBoundsException("Double exceeded range.");
+                }
+            }
             
             return true;
-        } catch(NumberFormatException e) {
+        } catch(NumberFormatException | FloatOutOfBoundsException e) {
             return false;
         }
+    }
+
+    public String getFloatType() {
+        return floatType;
     }
 }

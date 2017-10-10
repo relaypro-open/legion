@@ -16,14 +16,22 @@
 
 package com.rw.legion.columncheck;
 
-import com.google.gson.JsonObject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-/**
- * Deprecated. Please use <code>BooleanChecker</code>.
- */
+import static org.junit.jupiter.api.Assertions.*;
 
-public class BoolChecker extends BooleanChecker  {
-    public BoolChecker(JsonObject json) {
-        super(json);
+class StringCheckerTest {
+    private StringChecker sc;
+
+    @BeforeEach
+    void setUp() {
+        sc = new StringChecker(null);
     }
+
+    @Test
+    void validates() {
+        assertEquals(true, sc.validates(null));
+    }
+
 }
