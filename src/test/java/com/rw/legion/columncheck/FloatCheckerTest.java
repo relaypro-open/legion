@@ -30,6 +30,7 @@ class FloatCheckerTest {
 
     private String floatTypeDouble = "double";
     private String floatTypeFloat = "float";
+    private String floatTypeInvalid = "foobar";
 
     private static String maxDouble = Double.toString(Double.MAX_VALUE);  // 1.7976931348623157E308
     private static String minDouble = Double.toString(Double.MIN_VALUE);  // 4.9E-324
@@ -59,10 +60,15 @@ class FloatCheckerTest {
         return obj;
     }
     @BeforeEach
-    void setUp() {
+    void setUp() throws FloatChecker.InvalidFloatTypeException {
         fcUnspecified = new FloatChecker(buildJson(null));
         fcDouble = new FloatChecker(buildJson(floatTypeDouble));
         fcFloat = new FloatChecker(buildJson(floatTypeFloat));
+    }
+
+    @Test
+    void throwsInvalidFloatTypeException() {
+        assertThrows(FloatChecker.InvalidFloatTypeException.class, () -> new FloatChecker(buildJson(floatTypeInvalid)));
     }
 
     @Test
