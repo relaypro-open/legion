@@ -25,11 +25,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class FloatCheckerTest {
     private FloatChecker fcUnspecified;
+    private FloatChecker fcDoubleUpper;
     private FloatChecker fcDouble;
     private FloatChecker fcFloat;
 
+    private String floatTypeDoubleUpper = "DoUbLe";
     private String floatTypeDouble = "double";
     private String floatTypeFloat = "float";
+    private String floatTypeInvalid = "foobar";
 
     private static String maxDouble = Double.toString(Double.MAX_VALUE);  // 1.7976931348623157E308
     private static String minDouble = Double.toString(Double.MIN_VALUE);  // 4.9E-324
@@ -59,10 +62,21 @@ class FloatCheckerTest {
         return obj;
     }
     @BeforeEach
-    void setUp() {
+    void setUp() throws FloatChecker.InvalidFloatTypeException {
         fcUnspecified = new FloatChecker(buildJson(null));
+        fcDoubleUpper = new FloatChecker(buildJson(floatTypeDoubleUpper));
         fcDouble = new FloatChecker(buildJson(floatTypeDouble));
         fcFloat = new FloatChecker(buildJson(floatTypeFloat));
+    }
+
+    @Test
+    void throwsInvalidFloatTypeException() {
+        assertThrows(FloatChecker.InvalidFloatTypeException.class, () -> new FloatChecker(buildJson(floatTypeInvalid)));
+    }
+
+    @Test
+    void validatesDoubleUpperVar() {
+        assertEquals(floatTypeDouble, fcDoubleUpper.getFloatType());
     }
 
     @Test
