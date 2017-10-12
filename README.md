@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/republicwireless-open/legion.svg?branch=master)](https://travis-ci.org/republicwireless-open/legion)
 [![CodeCov](https://codecov.io/gh/republicwireless-open/legion/branch/master/graph/badge.svg)](https://codecov.io/gh/republicwireless-open/legion)
+[![GitHub license](https://img.shields.io/badge/license-apache-blue.svg)](https://github.com/republicwireless-open/legion/blob/master/LICENSE)
 
 ## Summary
 
